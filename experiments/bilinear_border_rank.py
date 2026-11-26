@@ -1071,7 +1071,7 @@ def main():
         "exp1_weight_decay": exp1,
         "exp2_smc_hmc": exp2,
         "exp3_quadratic_mlp": exp3,
-        "figure": str(fig_path),
+        "figure": fig_path.relative_to(ROOT.parent).as_posix(),
     }
     json_path = RESULTS_DIR / "bilinear_border_rank.json"
     json_path.write_text(json.dumps(payload, indent=2))

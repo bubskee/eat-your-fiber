@@ -8,6 +8,8 @@
 > - **Complete unconditional $(r^*, p, q)$ RRR zero-loss fiber stratification (`rrr_fiber_exact_pair`, `rrr_fiber_subcritical_plateau`, `rrr_fiber_A_supercritical_parabola`, `rrr_fiber_B_supercritical_parabola`, `rrr_supercritical_mutually_exclusive`) and irreducible-component codimension characterization (`rrr_fiber_eq_min_component_codim`, synthesizing `MAIS-O70` / `ztreisman/arc-llc`):** `[LC]` in `lean/EatYourFiber/RRRFiberStratification.lean` (all 60 audited theorems in `lean/Audit.lean` depend strictly on `[propext, Classical.choice, Quot.sound]`).
 > - **PyTorch MALA verification (`rank0_8x8x8`, `lora_16x16_r2_H10`):** `[empirical]` in `experiments/lora_fiber_sgld.py`.
 > - **Real GD / SGD / Adam / AdamW training dynamics on the fiber:** `[empirical]` in `experiments/lora_sgd_dynamics.py` (see `notes/lora_sgd_dynamics.md`).
+>
+> **See also:** [transformer_fiber_surgery.md](transformer_fiber_surgery.md) tests the full 2D $(p, q)$ stratification of §3.1 inside a real pretrained 2-layer causal Transformer (LoRA on $W_O$, next-token KL) via iso-functional fiber surgery, and adds a Pre-LayerNorm symmetry-breaking check, continual-learning consequences, and a functional-vs.-fiber decomposition of late-stage $\Delta\hat\lambda$ (`[empirical]`).
 
 ## 1. Setup
 

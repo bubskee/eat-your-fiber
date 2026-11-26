@@ -10,6 +10,8 @@
 - **`[empirical]`** (`experiments/bilinear_border_rank.py`, `experiments/results/bilinear_border_rank.{json,png}`):
   - Multi-start L-BFGS weight-decay scaling ($k=2$ vs $k=3$), SMC + HMC Bayesian free energy and diverging effective LLC $\hat\lambda(\beta) = \beta \mathbb{E}_\beta[L(\theta)]$, and real 1-hidden-layer quadratic MLP $f(x) = W_{\mathrm{out}}(W_{\mathrm{in}} x)^{\odot 2}$ training dynamics.
 
+> **See also:** [generic_border_rank.md](generic_border_rank.md) extends this measure-zero $W$-tensor class to the positive-measure open set $\operatorname{Det}(T^*) < 0$ (`[paper]` + `[empirical]`: $\gamma^{3/4}$, $\beta^{1/4}$, virial $3$), to higher-dimensional $d\times d\times d$ targets, and to real single-input Bilinear and SwiGLU MLPs.
+
 ---
 
 ## 1. Why Order-3 Breaks Order-2 SLT
@@ -114,7 +116,7 @@ $$\mathbb{E}_\beta[\|\theta\|_2^2] = \|\theta^*(\beta)\|_2^2 + \frac{30}{7} + o(
 #### Equilibrated SMC + HMC & Cold-Start Verification (`[empirical]`)
 Using 192 parallel SMC chains across 44 geometric temperatures up to $\beta = 10^6$ with **row-diagonal preconditioned HMC**, exact **torus gauge-balancing MH moves** ($\det J = 1$), and an exact reversible **1-parameter Lie-group border-rank move** $S_u = \operatorname{diag}(e^u, e^{-2u})$ (which leaves $W$ invariant and scales $e_1^{\otimes 3}$ by $e^{-6u}$ with Jacobian $\log|\det J| = -3ku$, eliminating the $\kappa \sim 10^8$ radial equilibration lag):
 
-| $\beta$ | $k=2$ Exact Laplace $\hat\lambda$ | $k=2$ SMC+HMC $\hat\lambda$ | $k=2$ Cold-Start $\hat\lambda$ ($z$) | $k=2$ Laplace $R^2$ | $k=2$ SMC $R^2$ | $k=2$ Cold $R^2$ ($z$) |
+| $\beta$ | $k=2$ Laplace saddle $\hat\lambda$ | $k=2$ SMC+HMC $\hat\lambda$ | $k=2$ Cold-Start $\hat\lambda$ ($z$) | $k=2$ Laplace $R^2$ | $k=2$ SMC $R^2$ | $k=2$ Cold $R^2$ ($z$) |
 |---:|---:|---:|---:|---:|---:|---:|
 | $10^4$ | 5.208 | 5.167 ± 0.057 | 5.261 ± 0.043 ($z=1.32$) | 21.15 | 21.03 ± 0.15 | 20.64 ± 0.15 ($z=1.85$) |
 | $10^5$ | 5.764 | 5.787 ± 0.062 | 5.842 ± 0.055 ($z=0.67$) | 27.51 | 27.24 ± 0.16 | 27.09 ± 0.14 ($z=0.71$) |
