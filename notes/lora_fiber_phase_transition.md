@@ -4,7 +4,7 @@
 > - **Schur-complement algebraic identity, two-sided loss comparison, and phase-transition formulas (`schur_block_right`, `schur_loss_lower`, `schur_loss_upper`, `lora_plateau_lambda/mult`, `lora_parabola_lambda/mult`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
 > - **Measure-theoretic Laplace Schur-complement reduction (`lora_schur_fiber_reduction`) & standard LoRA initialization pair (`lora_standard_init_exact_pair`):** `[LC]` in `lean/EatYourFiber/LoRASchurLaplace.lean`.
 > - **Independent elementary proof of Aoyagi–Watanabe boundary regimes (`rank0_hasLaplacePair_of_le_m`, `rank0_hasLaplacePair_of_le_n`) & supercritical LoRA parabola (`lora_supercritical_parabola_exact_pair`):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabeBoundary.lean`.
-> - **Full Aoyagi–Watanabe (2005) Theorem 1 across all four regimes and parities (`aoyagi_watanabe_rank0`), complete LoRA fiber exact pair (`lora_fiber_exact_pair`), and unconditional subcritical plateau (`lora_subcritical_plateau_exact_pair`):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabe.lean` (all 24 audited theorems in `lean/Audit.lean` depend strictly on `[propext, Classical.choice, Quot.sound]`).
+> - **Full Aoyagi–Watanabe (2005) Theorem 1 across all four regimes and parities (`aoyagi_watanabe_rank0`), complete LoRA fiber exact pair (`lora_fiber_exact_pair`), and unconditional subcritical plateau (`lora_subcritical_plateau_exact_pair`):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabe.lean` (all 48 audited theorems in `lean/Audit.lean` depend strictly on `[propext, Classical.choice, Quot.sound]`).
 > - **PyTorch MALA verification (`rank0_8x8x8`, `lora_16x16_r2_H10`):** `[empirical]` in `experiments/lora_fiber_sgld.py`.
 > - **Real GD / SGD / Adam / AdamW training dynamics on the fiber:** `[empirical]` in `experiments/lora_sgd_dynamics.py` (see `notes/lora_sgd_dynamics.md`).
 
@@ -66,6 +66,20 @@ At standard LoRA initialization ($q = k$, assuming $k \le n$), the excess learni
 $$\Delta\lambda = \lambda(k) - \lambda(0) = \frac{(m + k - n)^2}{8}.$$
 For $m = n = k$ (square rank-0 LoRA), $q_c = k/2$ and $\Delta\lambda = k^2 / 8$—scaling quadratically in the LoRA rank $k$.
 
+### 3.1 Full $(r^*, p, q)$ Stratification of the Fiber $\{BA = M^*\}$ (`[paper]` + `[LC]` special cases)
+
+The Lean certificates in `LoRASchurLaplace.lean` and `AoyagiWatanabe.lean` treat the excess rank-0 problem ($r^* = 0$) along one-sided half-dead strata $(B_{\mathrm{in}} = 0,\, \operatorname{rank}(A_{\mathrm{in}}) = q)$. More generally, at *any* point $(B, A)$ on the zero-loss fiber $\{BA = M^*\}$ with $\operatorname{rank}(M^*) = r^*$ and excess blocks $(B_{\mathrm{in}}, A_{\mathrm{in}})$ satisfying $B_{\mathrm{in}} A_{\mathrm{in}} = 0$ with $\operatorname{rank}(B_{\mathrm{in}}) = p$ and $\operatorname{rank}(A_{\mathrm{in}}) = q$ ($p + q \le k$, $p \le m$, $q \le n$):
+
+1. **Active-subspace Schur reduction (`[paper]`):** Eliminating the rank-$r^*$ active block contributes a regular Gaussian factor $\lambda_{\mathrm{act}} = \frac{r^*(M + N - r^*)}{2}$ (multiplicity $1$) and reduces the remaining integral to the rank-$0$ excess problem of size $(m, n, k) = (M - r^*, N - r^*, H - r^*)$.
+2. **Asymmetric two-sided Schur reduction (`[paper]`; balanced $p = q$ case `[LC]` as `twoSided_schur_reduction` in `AttentionLoRA.lean`):**
+   $$\lambda(r^*, p, q) = \frac{r^*(M + N - r^*)}{2} + \frac{pn + qm - pq}{2} + \lambda_{\mathrm{AW}}(m - p,\, n - q,\, k - p - q).$$
+   In the interior regime, define $p_c := \frac{k + m - n}{2}$ and $q_c := \frac{k + n - m}{2}$. Because $p_c + q_c = k \ge p + q$, the two supercritical regimes $p > p_c$ and $q > q_c$ are **mutually exclusive**:
+   - **Flat 2D subcritical plateau ($p \le p_c$ and $q \le q_c$):** $\lambda(r^*, p, q) = \lambda_{\mathrm{act}} + \lambda_{\mathrm{AW}}(m, n, k)$.
+   - **$A$-supercritical parabola ($q > q_c$, forcing $p < p_c$):** $\lambda(r^*, p, q) = \lambda_{\mathrm{act}} + \lambda_{\mathrm{AW}}^{\mathrm{even}}(m, n, k) + \frac{1}{2}(q - q_c)^2$.
+   - **$B$-supercritical parabola ($p > p_c$, forcing $q < q_c$):** $\lambda(r^*, p, q) = \lambda_{\mathrm{act}} + \lambda_{\mathrm{AW}}^{\mathrm{even}}(m, n, k) + \frac{1}{2}(p - p_c)^2$.
+
+This explains two observations elsewhere in the repository: (i) why single-head `Q+K` LoRA stays flat across all $q \le H$ (it rides the balanced diagonal $p = q \le H = p_c = q_c$ inside the 2D plateau; see `AttentionLoRA.lean`), and (ii) why small nonzero $B_{\mathrm{in}}$ generated during nonlinear Adam training (`notes/lora_nonlinear_fiber.md` §2.1) does not raise $\lambda$ above the $A$-supercritical parabola.
+
 ## 4. Empirical Verification (`[empirical]`)
 
 Running vectorized Metropolis-Adjusted Langevin Algorithm (MALA, 48 chains, $\beta = 10^5$, localization $\gamma = 20$, 6,000 burn-in + 8,000 sample steps; see `experiments/lora_fiber_sgld.py`) on two configurations reproduces both the subcritical flat plateau ($q \le q_c$) and the exact supercritical parabola $\frac{1}{2}(q - q_c)^2$ ($q > q_c$):
@@ -99,4 +113,9 @@ Running vectorized Metropolis-Adjusted Langevin Algorithm (MALA, 48 chains, $\be
 | 8 | 86.00 | 85.96 ± 0.05 | -0.04 |
 
 See `experiments/results/lora_fiber_phase_transition.png` for the plotted curves.
+
+### 4.1 Finite-$\beta$ Singular-vs.-Regular Convergence & Literature Context
+
+- **Why MALA sits slightly below theory for $q < q_c$ and snaps onto theory at $q = k$:** At the supercritical top $q = k$, all active coordinates enter quadratically in the loss (regular Gaussian directions, $m_{\log} = 1$), so $\beta \mathbb{E}_\beta[K] = \lambda(k) + O(\gamma/\beta)$ matches `32.00` / `86.00` to $\le 0.04$. On the singular subcritical plateau ($q < q_c$), higher-order quartic/determinantal directions converge slowly at $O(1 / \log(\beta/\gamma))$ with negative finite-$\beta$ bias (see the $(\beta, \gamma)$ stability sweep in `notes/lora_nonlinear_fiber.md` §1.3, where $\hat\lambda(q=0)$ rises monotonically from `22.39 -> 23.53` toward `24.0` as $\beta/\gamma$ increases, while unadjusted SGLD suffers severe *upward* discretization bias on stiff supercritical modes).
+- **Relation to prior SLT work:** Theorem `aoyagi_watanabe_rank0` gives a fully mechanized, elementary Lean 4 proof of Aoyagi & Watanabe (2005, *Neural Networks* 18(7): 924–933, Theorem 1), complementing Aoyagi's (2024, *Neural Networks*) deep linear network RLCTs and Lau, Furman, Wang, Murfet & Wei's (2025, AISTATS; `arXiv:2308.12108`) / Furman & Lau's (2024, `arXiv:2402.03698`) local learning coefficient framework by mapping out the exact phase transition *along* the zero-loss fiber of a fixed function.
 

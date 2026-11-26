@@ -12,8 +12,9 @@ where q_c = (n + k - m) / 2.
 
 We run vectorized MALA (Metropolis-Adjusted Langevin Algorithm) on the localized
 Gibbs posterior p(w) ~ exp(-beta * K(w) - (gamma/2) * ||w - w*||^2) so there is
-zero discretization bias, and also run standard mini-batch SGLD on synthetic data
-to confirm the exact same curve appears in standard devinterp-style estimation.
+zero discretization bias. For stochastic training dynamics (SGD/Adam/AdamW) and
+nonlinear/deep-MLP fiber experiments, see `lora_sgd_dynamics.py` and
+`lora_nonlinear_fiber.py`.
 """
 
 from __future__ import annotations
