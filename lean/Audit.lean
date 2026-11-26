@@ -29,6 +29,20 @@ import EatYourFiber
 #print axioms EatYourFiber.lora_fiber_exact_pair
 #print axioms EatYourFiber.lora_subcritical_plateau_exact_pair
 
+-- Self-Attention LoRA Coupling Dichotomy: V+O (4x jump) vs Q+K (GL(q) flat cancellation)
+#print axioms EatYourFiber.attnVO_factor
+#print axioms EatYourFiber.attnQK_factor
+#print axioms EatYourFiber.attention_QK_gauge_orbit
+#print axioms EatYourFiber.attention_VO_exact_pair
+#print axioms EatYourFiber.attention_VO_subcritical_plateau
+#print axioms EatYourFiber.attention_VO_supercritical_parabola
+#print axioms EatYourFiber.twoSided_schur_identities
+#print axioms EatYourFiber.twoSided_loss_bounds
+#print axioms EatYourFiber.twoSided_schur_reduction
+#print axioms EatYourFiber.attention_QK_exact_pair
+#print axioms EatYourFiber.attention_QK_flat_pair
+#print axioms EatYourFiber.attention_coupling_dichotomy_standard_init
+
 -- Order-3 Bilinear MLPs, Border-Rank Gap, and Stretched-Exponential SLT (Track 1)
 #print axioms EatYourFiber.exists_zero_loss_iff_tensorRank_le
 #print axioms EatYourFiber.geometricBorderRank_le_of_approx_loss
