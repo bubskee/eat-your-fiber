@@ -1,11 +1,10 @@
 # The LoRA / Reduced-Rank Fiber Phase Transition
 
 > **Epistemic status:**
-> - **Schur-complement algebraic identity & two-sided loss comparison (`schur_block_right`, `schur_loss_lower`, `schur_loss_upper`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
+> - **Schur-complement algebraic identity, two-sided loss comparison, and phase-transition formulas (`schur_block_right`, `schur_loss_lower`, `schur_loss_upper`, `lora_plateau_lambda/mult`, `lora_parabola_lambda/mult`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
 > - **Measure-theoretic Laplace Schur-complement reduction (`lora_schur_fiber_reduction`) & standard LoRA initialization pair (`lora_standard_init_exact_pair`):** `[LC]` in `lean/EatYourFiber/LoRASchurLaplace.lean`.
-> - **Aoyagi–Watanabe (2005) boundary regimes (`rank0_hasLaplacePair_of_le_m` for $k+n \le m$, `rank0_hasLaplacePair_of_le_n` for $k+m \le n$) & the entire unconditional supercritical LoRA parabola (`lora_supercritical_parabola_exact_pair`, all $n + k \le m + 2q$):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabeBoundary.lean` (audited via `lean/Audit.lean`).
-> - **Algebraic phase transition identities (`lora_plateau_lambda/mult`, `lora_parabola_lambda/mult`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
-> - **Aoyagi–Watanabe (2005) interior triangle ($k < m+n, m < k+n, n < k+m$) & wide-bottleneck regime ($m+n \le k$) for rank-0 `‖B₂ Δ₂₂‖_F^2`:** cited / `[paper]` (remaining piece to make the subcritical plateau unconditional in Lean).
+> - **Independent elementary proof of Aoyagi–Watanabe boundary regimes (`rank0_hasLaplacePair_of_le_m`, `rank0_hasLaplacePair_of_le_n`) & supercritical LoRA parabola (`lora_supercritical_parabola_exact_pair`):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabeBoundary.lean`.
+> - **Full Aoyagi–Watanabe (2005) Theorem 1 across all four regimes and parities (`aoyagi_watanabe_rank0`), complete LoRA fiber exact pair (`lora_fiber_exact_pair`), and unconditional subcritical plateau (`lora_subcritical_plateau_exact_pair`):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabe.lean` (all 24 audited theorems in `lean/Audit.lean` depend strictly on `[propext, Classical.choice, Quot.sound]`).
 > - **PyTorch MALA verification (`rank0_8x8x8`, `lora_16x16_r2_H10`):** `[empirical]` in `experiments/lora_fiber_sgld.py`.
 > - **Real GD / SGD / Adam / AdamW training dynamics on the fiber:** `[empirical]` in `experiments/lora_sgd_dynamics.py` (see `notes/lora_sgd_dynamics.md`).
 
@@ -19,7 +18,7 @@ Write the excess dimensions as $m = M - r^*$, $n = N - r^*$, and $k = H - r^*$.
 
 After rotating to the SVD basis of $M^*$, a realization on the zero-loss fiber $\{B A = M^*\}$ with $r^*$ active units and $k$ inactive units has residual blocks $B_{\mathrm{in}} \in \mathbb{R}^{m \times k}$, $A_{\mathrm{in}} \in \mathbb{R}^{k \times n}$ satisfying $B_{\mathrm{in}} A_{\mathrm{in}} = 0$.
 
-## 2. Exact Schur-Complement Reduction (`[paper]`)
+## 2. Exact Schur-Complement Reduction (`[LC]`)
 
 Fix $B_0 = 0 \in \mathbb{R}^{m \times k}$ and $A_0 \in \mathbb{R}^{k \times n}$ of rank $q \in \{0, \dots, \min(k, n)\}$:
 - $q = 0$: **fully dead** excess units ($B_0 = 0, A_0 = 0$).
@@ -43,7 +42,7 @@ Therefore:
 Hence the local learning pair at $(0, A_0)$ of rank $q$ is
 $$\lambda(q) = \frac{mq}{2} + \lambda_{\mathrm{AW}}(m, n - q, k - q), \qquad m_{\log}(q) = m_{\mathrm{AW}}(m, n - q, k - q).$$
 
-## 3. The Phase Transition (`[paper]`)
+## 3. The Phase Transition (`[LC]`)
 
 Recall Aoyagi–Watanabe (2005) Theorem 1 for $\|BA\|_F^2$ with $B \in \mathbb{R}^{m \times k}, A \in \mathbb{R}^{k \times n}$:
 - If $k \ge m + n$: $(\lambda, m_{\log}) = (mn/2, 1)$.

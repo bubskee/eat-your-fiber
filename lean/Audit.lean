@@ -23,6 +23,12 @@ import EatYourFiber
 #print axioms EatYourFiber.rank0_hasLaplacePair_of_le_n
 #print axioms EatYourFiber.lora_supercritical_parabola_exact_pair
 
+-- Full Aoyagi–Watanabe (2005) Theorem 1 & Complete Unconditional LoRA Fiber Phase Transition
+#print axioms EatYourFiber.rank0Z_ncBound
+#print axioms EatYourFiber.aoyagi_watanabe_rank0
+#print axioms EatYourFiber.lora_fiber_exact_pair
+#print axioms EatYourFiber.lora_subcritical_plateau_exact_pair
+
 -- Vendored OAI Tensor & BorderRank highlights (for Track 1: Bilinear MLPs)
 #print axioms OAI.LinearAlgebra.SpectralBooks.geometricBorderRank_le_tensorRank
 #print axioms OAI.LinearAlgebra.SpectralBooks.card_le_geometricBorderRank_of_minor

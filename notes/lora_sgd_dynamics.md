@@ -1,7 +1,7 @@
 # Gradient-Based Training Dynamics on the LoRA Fiber
 
 > **Epistemic status:**
-> - **Phase transition baseline (`lora_16x16_r2_H10`, $\lambda_{\mathrm{AW}} = 78$, $\lambda(q=8) = 86$, $q_c = 4$):** `[LC]` Schur reduction (`lean/EatYourFiber/LoRASchur.lean`, `LoRASchurLaplace.lean`) and `[LC]` unconditional supercritical parabola for all $q \ge q_c$ (`lean/EatYourFiber/AoyagiWatanabeBoundary.lean`, audited via `lean/Audit.lean`); `[paper]` Aoyagi–Watanabe interior triangle for $q < q_c$; `[empirical]` MALA curve in `experiments/lora_fiber_sgld.py`.
+> - **Phase transition baseline (`lora_16x16_r2_H10`, $\lambda_{\mathrm{AW}} = 78$, $\lambda(q=8) = 86$, $q_c = 4$):** `[LC]` across the entire fiber (`q ≤ q_c` plateau AND `q > q_c` parabola) in `lean/EatYourFiber/LoRASchur.lean`, `LoRASchurLaplace.lean`, `AoyagiWatanabeBoundary.lean`, and `AoyagiWatanabe.lean` (audited via `lean/Audit.lean`); `[empirical]` MALA curve in `experiments/lora_fiber_sgld.py`.
 > - **SGD / Adam / AdamW fiber landing & trajectory experiments (`full_batch`, `minibatch`):** `[empirical]` in `experiments/lora_sgd_dynamics.py` (results in `experiments/results/lora_sgd_dynamics.json` and `experiments/results/lora_sgd_dynamics.png`).
 > - **Subspace invariance mechanism ($U_\perp^\top B(t) = 0$ for standard LoRA init under GD/SGD):** elementary gradient algebra (`[paper]`).
 

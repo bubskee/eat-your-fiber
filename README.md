@@ -18,9 +18,12 @@ We keep claim statuses strictly separated across `notes/`, `lean/`, and `experim
 
 ## Current highlights
 
-- **`[LC]` Unconditional supercritical LoRA fiber parabola (`lean/EatYourFiber/AoyagiWatanabeBoundary.lean`):**
-  - Elementary Lean 4 proofs of Aoyagi–Watanabe (2005) boundary regimes $k + n \le m \implies (\frac{kn}{2}, 1)$ (`rank0_hasLaplacePair_of_le_m`) and $k + m \le n \implies (\frac{km}{2}, 1)$ (`rank0_hasLaplacePair_of_le_n`) via inductive orthogonal-projection Gaussian integration and an AM–GM cube bound (zero resolution of singularities, zero polar coordinates).
-  - Combined with the Schur-complement Laplace reduction (`lora_schur_fiber_reduction`), yields `lora_supercritical_parabola_exact_pair`: exact local learning pair $(\lambda_{\mathrm{AW}}^{\mathrm{even}}(m, n, k) + \frac{1}{2}(q - q_c)^2, 1)$ unconditionally for all $m, n, k, q$ with $q \le k, q \le n, k < m + n, n + k \le m + 2q$.
+- **`[LC]` Full Aoyagi–Watanabe (2005) Theorem 1 & Complete Unconditional LoRA Fiber Phase Transition (`lean/EatYourFiber/AoyagiWatanabe.lean`):**
+  - Elementary Lean 4 proof of **all four regimes** of Aoyagi–Watanabe (2005) Theorem 1 (`aoyagi_watanabe_rank0`: $m + n \le k$, $k + n \le m$, $k + m \le n$, and the interior triangle for both even parity $m_{\log} = 1$ and odd parity $m_{\log} = 2$) for all $m, k, n \in \mathbb{N}$ via a single structural induction on $(m, k)$ using projective blowup of $B$ at its max-magnitude entry, two unit-Jacobian affine translations, and `SLT.NC.stepG` (zero Hironaka, zero SVD/Weyl Jacobian, zero polar coordinates).
+  - Combined with the Schur-complement Laplace reduction (`lora_schur_fiber_reduction`), unconditionally certifies the **entire LoRA zero-loss fiber phase transition** for all $m, n, k, q \in \mathbb{N}$:
+    - `lora_fiber_exact_pair`: exact pair $(\frac{mq}{2} + \lambda_{\mathrm{AW}}(m, n-q, k-q),\; m_{\mathrm{AW}}(m, n-q, k-q))$ for all $q \le \min(k, n)$.
+    - `lora_subcritical_plateau_exact_pair`: **flat subcritical plateau** $(\lambda_{\mathrm{AW}}(m, n, k), m_{\mathrm{AW}}(m, n, k))$ for all interior $(m, n, k)$ and $m + 2q < n + k$.
+    - `lora_supercritical_parabola_exact_pair` (also independently proved in `AoyagiWatanabeBoundary.lean` via orthogonal projection + AM–GM cube bound): **supercritical parabola** $(\lambda_{\mathrm{AW}}^{\mathrm{even}}(m, n, k) + \frac{1}{2}(q - q_c)^2, 1)$ for all $n + k \le m + 2q$.
 - **`[empirical]` MALA phase-transition curve (`experiments/lora_fiber_sgld.py`, `notes/lora_fiber_phase_transition.md`):**
   - Reproduces both the flat plateau ($q \le q_c$) and the exact $\frac{1}{2}(q - q_c)^2$ parabola ($q > q_c$) on `rank0_8x8x8` and `lora_16x16_r2_H10`.
 - **`[empirical]` Real SGD / Adam / AdamW dynamics on the LoRA fiber (`experiments/lora_sgd_dynamics.py`, `notes/lora_sgd_dynamics.md`):**
@@ -30,7 +33,7 @@ We keep claim statuses strictly separated across `notes/`, `lean/`, and `experim
 ## Layout
 
 - `lean/` — Lean `v4.35.0` project depending on `slt-bridge` (`SLT`) and Mathlib, plus:
-  - `lean/EatYourFiber/` — new SLT fiber-geometry certificates (`LoRASchur`, `LoRASchurLaplace`, `AoyagiWatanabeBoundary`).
+  - `lean/EatYourFiber/` — new SLT fiber-geometry certificates (`LoRASchur`, `LoRASchurLaplace`, `AoyagiWatanabeBoundary`, `AoyagiWatanabe`).
   - `lean/Vendor/OAI/` — 8 self-contained Apache-2.0 tensor / border-rank / block-rank modules vendored from [`openai/math`](https://github.com/openai/math) (commit `3344da59991ed94f9ba711217b29c1d760badfa6`). See [NOTICE](NOTICE).
 - `experiments/` — reproducible Python / PyTorch SGLD and SGD scripts (`uv`-managed).
 - `notes/` — mathematical derivations and experiment logs.
