@@ -33,6 +33,10 @@ We keep claim statuses strictly separated across `notes/`, `lean/`, and `experim
     - `lora_supercritical_parabola_exact_pair` (also independently proved in `AoyagiWatanabeBoundary.lean` via orthogonal projection + AM–GM cube bound): **supercritical parabola** $(\lambda_{\mathrm{AW}}^{\mathrm{even}}(m, n, k) + \frac{1}{2}(q - q_c)^2, 1)$ for all $n + k \le m + 2q$.
 - **`[empirical]` MALA phase-transition curve (`experiments/lora_fiber_sgld.py`, `notes/lora_fiber_phase_transition.md`):**
   - Reproduces both the flat plateau ($q \le q_c$) and the exact $\frac{1}{2}(q - q_c)^2$ parabola ($q > q_c$) on `rank0_8x8x8` and `lora_16x16_r2_H10`.
+- **`[empirical]` Nonlinear MLP & Self-Attention LoRA fiber dynamics (`experiments/lora_nonlinear_fiber.py`, `notes/lora_nonlinear_fiber.md`):**
+  - **MLP invariance & dead-neuron shift:** GELU, ReLU, and SwiGLU 2-layer MLPs reproduce the exact linear phase transition $\lambda(q) = 24 + \frac{1}{2}(q - 4)_+^2$ within $1\sigma$ (`q=8: 31.97–32.01 ± 0.07`); killing 2 ReLU neurons ($m_{\mathrm{eff}} = 6$) shifts $q_c: 4 \to 5$, plateau $24.0 \to 19.5$, and top $32.0 \to 24.0$ (`23.99 ± 0.04`).
+  - **Attention $V$-$O$ vs. $Q$-$K$ coupling dichotomy (`[paper]` + `[empirical]`):** Single-head joint `V+O` stacks both $A$-factors on the same side, **quadrupling** the supercritical jump ($\lambda_{V+O}(q) = 24 + 2(q-2)_+^2$, MALA `q=4: 32.00 ± 0.06`). By contrast, joint `Q+K` places $A_Q^\top$ on the left and $A_K$ on the right, inducing an **exact all-orders $GL(q)$ gauge symmetry** that **completely annihilates the supercritical parabola** ($\lambda_{Q+K}(q) \equiv 24.0$ flat, MALA `q=4: 23.99 ± 0.05`). In **2-head attention** ($d_h + q \le d$), cross-head transversality breaks the $GL(q)$ cancellation and restores the full supercritical top (`32.10 ± 0.14`).
+  - **Training & honest noisy-data nuance:** On realizable GELU MLP and full $Q,K,V,O$ Attention tasks, Adam/SGD without WD stay supercritical while AdamW and SGD+WD descend onto the subcritical plateau. On low-sample noisy fine-tuning ($S=48, \sigma=0.25$), noise excites all 8 LoRA ranks (destroying the inactive fiber); moderate decoupled AdamW shrinks $\|A_{\perp B}\|_F$ without improving test MSE, whereas strong WD, coupled SGD+WD, or subcritical rank-$2$ init cut test MSE by $2\text{--}8\times$.
 - **`[empirical]` Real SGD / Adam / AdamW dynamics on the LoRA fiber (`experiments/lora_sgd_dynamics.py`, `notes/lora_sgd_dynamics.md`):**
   - Without weight decay, full-batch GD/Adam and mini-batch SGD/Adam from standard LoRA init ($B = 0, A \sim \mathcal{N}$) remain pinned at the supercritical top $q = k = 8$ ($\hat\lambda \approx 85.8\text{--}86.0$, $+8$ above $\lambda_{\mathrm{AW}} = 78$).
   - Adding weight decay (`AdamW` or `SGD+WD`) contracts $A_{\mathrm{in}}$ below $q_c = 4$, sliding $\hat\lambda(t)$ down the parabola onto the global-minimum plateau ($\hat\lambda \approx 75.7\text{--}75.9$, matching the $q = 0$ MALA baseline).
@@ -63,6 +67,7 @@ cd experiments
 uv run python bilinear_border_rank.py
 uv run python lora_fiber_sgld.py
 uv run python lora_sgd_dynamics.py
+uv run python lora_nonlinear_fiber.py
 ```
 
 ## License & Attribution
