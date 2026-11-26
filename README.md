@@ -18,6 +18,13 @@ We keep claim statuses strictly separated across `notes/`, `lean/`, and `experim
 
 ## Current highlights
 
+- **`[LC]` Order-3 Bilinear MLPs, Border-Rank Singularity & Stretched-Exponential SLT (`lean/EatYourFiber/BorderRankSLT.lean`):**
+  - Bridges width-$k$ bilinear MLPs $T(A, B, C) = \sum_{r=1}^k a_r \otimes b_r \otimes c_r$ directly to OpenAI's vendored `Tensor`, `tensorRank`, and `geometricBorderRank` (`exists_zero_loss_iff_tensorRank_le`, `geometricBorderRank_le_of_approx_loss`).
+  - Certifies the exact border-rank gap of the canonical $W$-tensor $W = e_0\otimes e_0\otimes e_1 + e_0\otimes e_1\otimes e_0 + e_1\otimes e_0\otimes e_0$ over every field $F$ (`wTensor_geometricBorderRank`: `= 2` via OpenAI's `card_le_geometricBorderRank_of_minor`; `wTensor_tensorRank`: `= 3` via 2×2 slice identities).
+  - Proves the sharp quantitative escape law $\inf_{\|\theta\|_2 \le R} \|T(\theta) - W\|_F^2 \asymp R^{-12}$ (`wTensor_loss_ge_of_paramNormSq`, `wTensor_escape_upper`) achieved by the centered finite-difference curve $\tilde W_\varepsilon = W + \varepsilon^2 e_1^{\otimes 3}$, the exact weight-decay law $\inf_\theta (\|T(\theta)-W\|_F^2 + \gamma \|\theta\|_2^2) \asymp \gamma^{6/7}$ (`wTensor_weightDecay_lower`, `wTensor_weightDecay_upper`), and **stretched-exponential Bayesian free energy** $-\log Z_W^{(2)}(N) \asymp N^{1/7}$ (`wPartitionZ_two_le_stretchedExp`, `wPartitionZ_two_ge_stretchedExp`) contrasted against **width-3 realizable polynomial decay** $-\log Z_W^{(3)}(N) \le 9\log N + C_3$ (`wPartitionZ_three_ge_poly`).
+- **`[empirical]` Order-3 border-rank scaling, SMC+HMC free energy & quadratic MLP (`experiments/bilinear_border_rank.py`, `notes/bilinear_border_rank.md`):**
+  - Multi-start L-BFGS spontaneously discovers the centered curve $\tilde W_\varepsilon$ (`e111` residual fraction `1.0000`, `obj/pred = 1.0028`, virial ratio `6.05` vs `6.00`, loss slope `0.851` vs `6/7 = 0.857`, norm² slope `-0.139` vs `-1/7 = -0.143`), plus a sharp width-3 first-order branch transition from the border-rank branch at high $\gamma$ to the rank-3 fiber at low $\gamma$.
+  - SMC + HMC across $\beta \in [0.5, 10^5]$ shows $\hat\lambda(\beta) = \beta \mathbb{E}_\beta[L]$ plateauing flat at $\lambda = 4.03 \pm 0.08$ for $k=3$, while **diverging as $\beta^{1/7}$** (slope `0.154` vs `0.143`, reaching `8.65 ± 0.14`) for $k=2$, giving width 3 a `10.74`-nat lower Bayesian free energy despite 6 more parameters.
 - **`[LC]` Full Aoyagi–Watanabe (2005) Theorem 1 & Complete Unconditional LoRA Fiber Phase Transition (`lean/EatYourFiber/AoyagiWatanabe.lean`):**
   - Elementary Lean 4 proof of **all four regimes** of Aoyagi–Watanabe (2005) Theorem 1 (`aoyagi_watanabe_rank0`: $m + n \le k$, $k + n \le m$, $k + m \le n$, and the interior triangle for both even parity $m_{\log} = 1$ and odd parity $m_{\log} = 2$) for all $m, k, n \in \mathbb{N}$ via a single structural induction on $(m, k)$ using projective blowup of $B$ at its max-magnitude entry, two unit-Jacobian affine translations, and `SLT.NC.stepG` (zero Hironaka, zero SVD/Weyl Jacobian, zero polar coordinates).
   - Combined with the Schur-complement Laplace reduction (`lora_schur_fiber_reduction`), unconditionally certifies the **entire LoRA zero-loss fiber phase transition** for all $m, n, k, q \in \mathbb{N}$:
@@ -33,7 +40,7 @@ We keep claim statuses strictly separated across `notes/`, `lean/`, and `experim
 ## Layout
 
 - `lean/` — Lean `v4.35.0` project depending on `slt-bridge` (`SLT`) and Mathlib, plus:
-  - `lean/EatYourFiber/` — new SLT fiber-geometry certificates (`LoRASchur`, `LoRASchurLaplace`, `AoyagiWatanabeBoundary`, `AoyagiWatanabe`).
+  - `lean/EatYourFiber/` — new SLT fiber-geometry certificates (`LoRASchur`, `LoRASchurLaplace`, `AoyagiWatanabeBoundary`, `AoyagiWatanabe`, `BorderRankSLT`).
   - `lean/Vendor/OAI/` — 8 self-contained Apache-2.0 tensor / border-rank / block-rank modules vendored from [`openai/math`](https://github.com/openai/math) (commit `3344da59991ed94f9ba711217b29c1d760badfa6`). See [NOTICE](NOTICE).
 - `experiments/` — reproducible Python / PyTorch SGLD and SGD scripts (`uv`-managed).
 - `notes/` — mathematical derivations and experiment logs.
@@ -49,10 +56,11 @@ lake build
 lake env lean -DwarningAsError=true -DautoImplicit=false Audit.lean
 ```
 
-### PyTorch MALA & SGD/Adam LoRA fiber experiments
+### PyTorch experiments (Track 1 & Track 2)
 
 ```sh
 cd experiments
+uv run python bilinear_border_rank.py
 uv run python lora_fiber_sgld.py
 uv run python lora_sgd_dynamics.py
 ```

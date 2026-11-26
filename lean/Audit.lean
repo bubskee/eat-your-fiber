@@ -29,6 +29,20 @@ import EatYourFiber
 #print axioms EatYourFiber.lora_fiber_exact_pair
 #print axioms EatYourFiber.lora_subcritical_plateau_exact_pair
 
+-- Order-3 Bilinear MLPs, Border-Rank Gap, and Stretched-Exponential SLT (Track 1)
+#print axioms EatYourFiber.exists_zero_loss_iff_tensorRank_le
+#print axioms EatYourFiber.geometricBorderRank_le_of_approx_loss
+#print axioms EatYourFiber.wTensor_geometricBorderRank
+#print axioms EatYourFiber.wTensor_tensorRank
+#print axioms EatYourFiber.wTensor_borderRank_lt_tensorRank
+#print axioms EatYourFiber.wTensor_loss_ge_of_paramNormSq
+#print axioms EatYourFiber.wTensor_escape_upper
+#print axioms EatYourFiber.wTensor_weightDecay_lower
+#print axioms EatYourFiber.wTensor_weightDecay_upper
+#print axioms EatYourFiber.wPartitionZ_two_le_stretchedExp
+#print axioms EatYourFiber.wPartitionZ_two_ge_stretchedExp
+#print axioms EatYourFiber.wPartitionZ_three_ge_poly
+
 -- Vendored OAI Tensor & BorderRank highlights (for Track 1: Bilinear MLPs)
 #print axioms OAI.LinearAlgebra.SpectralBooks.geometricBorderRank_le_tensorRank
 #print axioms OAI.LinearAlgebra.SpectralBooks.card_le_geometricBorderRank_of_minor
