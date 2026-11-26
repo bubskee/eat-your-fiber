@@ -1,0 +1,27 @@
+eat-your-fiber
+Copyright 2026 Bobby Faber
+
+This repository includes Lean 4 source files adapted from OpenAI's public
+mathematics repository (`openai/math`), licensed under the Apache License 2.0:
+
+  Source repository: https://github.com/openai/math
+  Pinned commit:     3344da59991ed94f9ba711217b29c1d760badfa6
+  License:           Apache License 2.0
+
+Specifically, the files under `lean/Vendor/OAI/` are adapted (with module
+namespace/import path adjustments for Lean v4.35.0 and this package layout)
+from:
+
+  - lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensor.lean
+  - lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorBatching.lean
+  - lean/OAI/LinearAlgebra/MatrixMultiplication/ComplexArithmetic/Complexity.lean
+  - lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexMatrixTensor.lean
+  - lean/OAI/LinearAlgebra/MatrixMultiplication/Tensor/ComplexTensorFlattening.lean
+  - lean/OAI/LinearAlgebra/SpectralBooks/Tensor.lean
+  - lean/OAI/LinearAlgebra/SpectralBooks/BorderRank.lean
+  - lean/OAI/LinearAlgebra/SpectralBooks/BlockDiagRank.lean
+
+Associated preprints:
+  OpenAI (2026), "The matrix multiplication exponent is nine fourths" and
+  "Euclidean geometry in the asymptotic spectrum of tensors",
+  https://github.com/openai/math/tree/main/preprints/The-matrix-multiplication-exponent-is-nine-fourths-November-24-2026

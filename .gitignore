@@ -1,0 +1,5 @@
+.DS_Store
+lean/.lake/
+experiments/.venv/
+experiments/__pycache__/
+*.pyc
