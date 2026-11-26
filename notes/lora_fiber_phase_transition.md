@@ -2,10 +2,12 @@
 
 > **Epistemic status:**
 > - **Schur-complement algebraic identity & two-sided loss comparison (`schur_block_right`, `schur_loss_lower`, `schur_loss_upper`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
-> - **Measure-theoretic Laplace Schur-complement reduction (`lora_schur_fiber_reduction`) & unconditional standard LoRA initialization pair (`lora_standard_init_exact_pair`):** `[LC]` in `lean/EatYourFiber/LoRASchurLaplace.lean` (audited via `lean/Audit.lean`).
+> - **Measure-theoretic Laplace Schur-complement reduction (`lora_schur_fiber_reduction`) & standard LoRA initialization pair (`lora_standard_init_exact_pair`):** `[LC]` in `lean/EatYourFiber/LoRASchurLaplace.lean`.
+> - **Aoyagi–Watanabe (2005) boundary regimes (`rank0_hasLaplacePair_of_le_m` for $k+n \le m$, `rank0_hasLaplacePair_of_le_n` for $k+m \le n$) & the entire unconditional supercritical LoRA parabola (`lora_supercritical_parabola_exact_pair`, all $n + k \le m + 2q$):** `[LC]` in `lean/EatYourFiber/AoyagiWatanabeBoundary.lean` (audited via `lean/Audit.lean`).
 > - **Algebraic phase transition identities (`lora_plateau_lambda/mult`, `lora_parabola_lambda/mult`):** `[LC]` in `lean/EatYourFiber/LoRASchur.lean`.
-> - **Aoyagi–Watanabe (2005) RLCT theorem for rank-0 `‖B₂ Δ₂₂‖_F^2`:** cited / `[paper]` (Lean formalization next).
+> - **Aoyagi–Watanabe (2005) interior triangle ($k < m+n, m < k+n, n < k+m$) & wide-bottleneck regime ($m+n \le k$) for rank-0 `‖B₂ Δ₂₂‖_F^2`:** cited / `[paper]` (remaining piece to make the subcritical plateau unconditional in Lean).
 > - **PyTorch MALA verification (`rank0_8x8x8`, `lora_16x16_r2_H10`):** `[empirical]` in `experiments/lora_fiber_sgld.py`.
+> - **Real GD / SGD / Adam / AdamW training dynamics on the fiber:** `[empirical]` in `experiments/lora_sgd_dynamics.py` (see `notes/lora_sgd_dynamics.md`).
 
 ## 1. Setup
 
