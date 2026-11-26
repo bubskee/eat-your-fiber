@@ -3251,5 +3251,556 @@ theorem attention_coupling_dichotomy_standard_init {d H : ℕ} (h2Hd : 2 * H ≤
     exact h δ hδ hδle
   · exact attention_QK_flat_pair le_rfl (by omega)
 
+/-! ### 8. General Orthogonal Initializations for Joint `Q+K` LoRA -/
+
+/-- **Exact all-orders joint `Q+K` Self-Attention LoRA loss for arbitrary orthogonal
+initializations `A_{Q,0} = baseAQK * Uᵀ`, `A_{K,0} = baseAQK * V`:**
+`‖(I_d + B_Q (baseAQK * Uᵀ + ΔA_Q))ᵀ (I_d + B_K (baseAQK * V + ΔA_K)) - I_d‖_F²`,
+where `θ = ((B_K, ΔA_Q, ΔA_K), B_Q)`. -/
+def attnQKLossGen (d H q : ℕ) (U V : Matrix (Fin d) (Fin d) ℝ) (θ : AttnPairParam d H) : ℝ :=
+  let B_K := Matrix.of θ.1.1
+  let A_Q := baseAQK d H q * Uᵀ + Matrix.of θ.1.2.1
+  let A_K := baseAQK d H q * V + Matrix.of θ.1.2.2
+  let B_Q := Matrix.of θ.2
+  frobSq ((1 + B_Q * A_Q)ᵀ * (1 + B_K * A_K) - 1)
+
+/-- Exact linearized joint `Q+K` loss for arbitrary orthogonal initializations `U, V`. -/
+def attnQKLinLossGen (d H q : ℕ) (U V : Matrix (Fin d) (Fin d) ℝ) (θ : AttnPairParam d H) : ℝ :=
+  frobSq (Matrix.of θ.1.1 * (baseAQK d H q * V + Matrix.of θ.1.2.2) +
+          (baseAQK d H q * Uᵀ + Matrix.of θ.1.2.1)ᵀ * (Matrix.of θ.2)ᵀ)
+
+/-- Finite square orthogonal matrices commute with their transposes: `Uᵀ * U = 1 → U * Uᵀ = 1`. -/
+theorem orth_mul_transpose {d : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1) :
+    U * Uᵀ = 1 := by
+  have hdet : IsUnit U.det := by
+    have h1 : Uᵀ.det * U.det = 1 := by rw [← Matrix.det_mul, hU, Matrix.det_one]
+    exact isUnit_iff_ne_zero.mpr fun h0 => by simp [h0] at h1
+  have hinv : Uᵀ = U⁻¹ := by
+    calc Uᵀ = Uᵀ * (U * U⁻¹) := by rw [Matrix.mul_nonsing_inv U hdet, Matrix.mul_one]
+      _ = (Uᵀ * U) * U⁻¹ := by rw [Matrix.mul_assoc]
+      _ = U⁻¹ := by rw [hU, Matrix.one_mul]
+  rw [hinv, Matrix.mul_nonsing_inv U hdet]
+
+/-- Squared Frobenius norm is invariant under transpose. -/
+theorem frobSq_transpose {m n : ℕ} (X : Matrix (Fin m) (Fin n) ℝ) :
+    frobSq Xᵀ = frobSq X := by
+  unfold frobSq
+  rw [Finset.sum_comm]
+  rfl
+
+/-- Left orthogonal invariance of squared Frobenius norm. -/
+theorem frobSq_mul_orth_left {d n : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1)
+    (X : Matrix (Fin d) (Fin n) ℝ) :
+    frobSq (U * X) = frobSq X := by
+  have htr : ∀ (Y : Matrix (Fin d) (Fin n) ℝ), frobSq Y = (Yᵀ * Y).trace := fun Y => by
+    unfold frobSq
+    rw [Matrix.trace, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    simp [Matrix.diag_apply, Matrix.mul_apply, Matrix.transpose_apply, sq]
+  rw [htr (U * X), htr X, Matrix.transpose_mul, Matrix.mul_assoc, ← Matrix.mul_assoc Uᵀ U X,
+    hU, Matrix.one_mul]
+
+/-- Right orthogonal invariance of squared Frobenius norm. -/
+theorem frobSq_mul_orth_right {m d : ℕ} {V : Matrix (Fin d) (Fin d) ℝ} (hV : Vᵀ * V = 1)
+    (X : Matrix (Fin m) (Fin d) ℝ) :
+    frobSq (X * V) = frobSq X := by
+  rw [← frobSq_transpose (X * V), Matrix.transpose_mul]
+  have hVT : (Vᵀ)ᵀ * Vᵀ = 1 := by
+    rw [Matrix.transpose_transpose]
+    exact orth_mul_transpose hV
+  rw [frobSq_mul_orth_left hVT Xᵀ, frobSq_transpose]
+
+/-- An orthogonal matrix has determinant `±1`, i.e., `|det U| = 1`. -/
+theorem abs_det_eq_one_of_orth {d : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1) :
+    |U.det| = 1 := by
+  have hsq : U.det ^ 2 = 1 := by
+    calc U.det ^ 2 = U.det * U.det := sq U.det
+      _ = Uᵀ.det * U.det := by rw [Matrix.det_transpose]
+      _ = (Uᵀ * U).det := (Matrix.det_mul Uᵀ U).symm
+      _ = 1 := by rw [hU, Matrix.det_one]
+  have hsq_abs : |U.det| ^ 2 = 1 := by rwa [sq_abs]
+  nlinarith [abs_nonneg U.det]
+
+/-- Every entry of an orthogonal matrix has absolute value at most `1`. -/
+theorem orth_entry_abs_le_one {d : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1)
+    (i j : Fin d) : |U i j| ≤ 1 := by
+  have hcol : ∑ k : Fin d, (U k j) ^ 2 = 1 := by
+    have hjj := congrFun (congrFun hU j) j
+    simpa [Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, sq] using hjj
+  have hle : (U i j) ^ 2 ≤ 1 := by
+    rw [← hcol]
+    exact Finset.single_le_sum (fun k _ => sq_nonneg (U k j)) (Finset.mem_univ i)
+  nlinarith [abs_nonneg (U i j), sq_abs (U i j)]
+
+/-- Left multiplication by an orthogonal `d × d` matrix maps `matBox δ` into `matBox ((d + 1) * δ)`. -/
+theorem orth_mul_left_mem_matBox {d m : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1)
+    {δ : ℝ} (hδ : 0 ≤ δ) {M : RMat d m} (hM : M ∈ matBox δ) :
+    toRMat (U * Matrix.of M) ∈ matBox (((d : ℝ) + 1) * δ) := by
+  rw [mem_matBox_iff] at hM ⊢
+  intro i j
+  simp only [toRMat_apply, Matrix.mul_apply, Matrix.of_apply]
+  calc |∑ k : Fin d, U i k * M k j|
+      ≤ ∑ k : Fin d, |U i k * M k j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k : Fin d, |U i k| * |M k j| := by simp_rw [abs_mul]
+    _ ≤ ∑ _k : Fin d, 1 * δ := Finset.sum_le_sum fun k _ =>
+        mul_le_mul (orth_entry_abs_le_one hU i k) (hM k j) (abs_nonneg _) zero_le_one
+    _ = (d : ℝ) * δ := by simp
+    _ ≤ ((d : ℝ) + 1) * δ := by nlinarith
+
+/-- Right multiplication by an orthogonal `d × d` matrix maps `matBox δ` into `matBox ((d + 1) * δ)`. -/
+theorem orth_mul_right_mem_matBox {m d : ℕ} {U : Matrix (Fin d) (Fin d) ℝ} (hU : Uᵀ * U = 1)
+    {δ : ℝ} (hδ : 0 ≤ δ) {M : RMat m d} (hM : M ∈ matBox δ) :
+    toRMat (Matrix.of M * U) ∈ matBox (((d : ℝ) + 1) * δ) := by
+  rw [mem_matBox_iff] at hM ⊢
+  intro i j
+  simp only [toRMat_apply, Matrix.mul_apply, Matrix.of_apply]
+  calc |∑ k : Fin d, M i k * U k j|
+      ≤ ∑ k : Fin d, |M i k * U k j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k : Fin d, |M i k| * |U k j| := by simp_rw [abs_mul]
+    _ ≤ ∑ _k : Fin d, δ * 1 := Finset.sum_le_sum fun k _ =>
+        mul_le_mul (hM i k) (orth_entry_abs_le_one hU k j) (abs_nonneg _) hδ
+    _ = (d : ℝ) * δ := by simp
+    _ ≤ ((d : ℝ) + 1) * δ := by nlinarith
+
+/-- Left orthogonal multiplication as a `MeasurableEquiv` on `RMat d m`. -/
+def orthMulLeftEquiv {d m : ℕ} (U : Matrix (Fin d) (Fin d) ℝ) (hU : Uᵀ * U = 1) :
+    RMat d m ≃ᵐ RMat d m where
+  toFun B := toRMat (U * Matrix.of B)
+  invFun B := toRMat (Uᵀ * Matrix.of B)
+  left_inv B := by
+    funext i j
+    have h : Uᵀ * (U * Matrix.of B) = Matrix.of B := by
+      rw [← Matrix.mul_assoc, hU, Matrix.one_mul]
+    exact congrFun (congrFun h i) j
+  right_inv B := by
+    funext i j
+    have h : U * (Uᵀ * Matrix.of B) = Matrix.of B := by
+      rw [← Matrix.mul_assoc, orth_mul_transpose hU, Matrix.one_mul]
+    exact congrFun (congrFun h i) j
+  measurable_toFun := by
+    refine Measurable.of_eval fun i => Measurable.of_eval fun j => ?_
+    change Measurable (fun B : RMat d m => ∑ k : Fin d, U i k * B k j)
+    fun_prop
+  measurable_invFun := by
+    refine Measurable.of_eval fun i => Measurable.of_eval fun j => ?_
+    change Measurable (fun B : RMat d m => ∑ k : Fin d, Uᵀ i k * B k j)
+    fun_prop
+
+/-- Right orthogonal multiplication as a `MeasurableEquiv` on `RMat m d`. -/
+def orthMulRightEquiv {m d : ℕ} (U : Matrix (Fin d) (Fin d) ℝ) (hU : Uᵀ * U = 1) :
+    RMat m d ≃ᵐ RMat m d where
+  toFun A := toRMat (Matrix.of A * U)
+  invFun A := toRMat (Matrix.of A * Uᵀ)
+  left_inv A := by
+    funext i j
+    have h : (Matrix.of A * U) * Uᵀ = Matrix.of A := by
+      rw [Matrix.mul_assoc, orth_mul_transpose hU, Matrix.mul_one]
+    exact congrFun (congrFun h i) j
+  right_inv A := by
+    funext i j
+    have h : (Matrix.of A * Uᵀ) * U = Matrix.of A := by
+      rw [Matrix.mul_assoc, hU, Matrix.mul_one]
+    exact congrFun (congrFun h i) j
+  measurable_toFun := by
+    refine Measurable.of_eval fun i => Measurable.of_eval fun j => ?_
+    change Measurable (fun A : RMat m d => ∑ k : Fin d, A i k * U k j)
+    fun_prop
+  measurable_invFun := by
+    refine Measurable.of_eval fun i => Measurable.of_eval fun j => ?_
+    change Measurable (fun A : RMat m d => ∑ k : Fin d, A i k * Uᵀ k j)
+    fun_prop
+
+/-- Left multiplication by an orthogonal matrix preserves Lebesgue measure on `RMat d m`. -/
+theorem measurePreserving_orthMulLeftEquiv {d m : ℕ} (U : Matrix (Fin d) (Fin d) ℝ)
+    (hU : Uᵀ * U = 1) :
+    MeasurePreserving (orthMulLeftEquiv (m := m) U hU) volume volume := by
+  refine ⟨(orthMulLeftEquiv (m := m) U hU).measurable, ?_⟩
+  have habs : |U.det| = 1 := abs_det_eq_one_of_orth hU
+  have hdet : U.det ≠ 0 := fun h0 => by rw [h0, abs_zero] at habs; norm_num at habs
+  change Measure.map (fun B : RMat d m => toRMat (U * Matrix.of B)) volume = volume
+  rw [map_mul_left_volume U hdet, abs_inv, habs, inv_one, ENNReal.ofReal_one, one_pow, one_smul]
+
+/-- Right multiplication by an orthogonal matrix preserves Lebesgue measure on `RMat m d`. -/
+theorem measurePreserving_orthMulRightEquiv {m d : ℕ} (U : Matrix (Fin d) (Fin d) ℝ)
+    (hU : Uᵀ * U = 1) :
+    MeasurePreserving (orthMulRightEquiv (m := m) U hU) volume volume := by
+  refine ⟨(orthMulRightEquiv (m := m) U hU).measurable, ?_⟩
+  have habs : |U.det| = 1 := abs_det_eq_one_of_orth hU
+  have hdet : U.det ≠ 0 := fun h0 => by rw [h0, abs_zero] at habs; norm_num at habs
+  change Measure.map (fun A : RMat m d => toRMat (Matrix.of A * U)) volume = volume
+  rw [map_mul_right_volume (m := m) U hdet, abs_inv, habs, inv_one, ENNReal.ofReal_one, one_pow,
+    one_smul]
+
+/-- Linearized `Q+K` loss with arbitrary orthogonal initializations `U, V` has the exact same
+learning pair as the canonical `U = V = I` linearized `Q+K` loss. -/
+private theorem attnQKLinGen_hasLaplacePair {d H q : ℕ} (hqH : q ≤ H) (hqd : q ≤ d)
+    (U V : Matrix (Fin d) (Fin d) ℝ) (hU : Uᵀ * U = 1) (hV : Vᵀ * V = 1) :
+    ∃ ρ₀ : ℝ, 0 < ρ₀ ∧ ∀ ρ : ℝ, 0 < ρ → ρ ≤ ρ₀ →
+      SLT.HasLaplacePair
+        (SLT.Z (volume.restrict (attnPairBox d H ρ)) (attnQKLinLossGen d H q U V))
+        (((q : ℝ) * q + 2 * q * (d - q)) / 2 + awLambda (d - q) (d - q) (2 * H - 2 * q))
+        (awMult (d - q) (d - q) (2 * H - 2 * q)) := by
+  have hUT : (Uᵀ)ᵀ * Uᵀ = 1 := by rw [Matrix.transpose_transpose]; exact orth_mul_transpose hU
+  have hVT : (Vᵀ)ᵀ * Vᵀ = 1 := by rw [Matrix.transpose_transpose]; exact orth_mul_transpose hV
+  let Φ : AttnPairParam d H ≃ᵐ AttnPairParam d H :=
+    ((orthMulLeftEquiv (m := H) Uᵀ hUT).prodCongr
+      ((orthMulRightEquiv (m := H) U hU).prodCongr (orthMulRightEquiv (m := H) Vᵀ hVT))).prodCongr
+      (orthMulLeftEquiv (m := H) V hV)
+  have hΦ_mp : MeasurePreserving Φ volume volume :=
+    measurePreserving_prodCongr
+      (measurePreserving_prodCongr (measurePreserving_orthMulLeftEquiv Uᵀ hUT)
+        (measurePreserving_prodCongr (measurePreserving_orthMulRightEquiv U hU)
+          (measurePreserving_orthMulRightEquiv Vᵀ hVT)))
+      (measurePreserving_orthMulLeftEquiv V hV)
+  have hΦ_loss : ∀ θ : AttnPairParam d H,
+      attnQKLinLossGen d H q U V θ = attnQKLinLoss d H q (Φ θ) := by
+    intro ⟨⟨B_K, ΔA_Q, ΔA_K⟩, B_Q⟩
+    unfold attnQKLinLossGen attnQKLinLoss
+    set X : Matrix (Fin d) (Fin d) ℝ :=
+      Matrix.of B_K * (baseAQK d H q * V + Matrix.of ΔA_K) +
+        (baseAQK d H q * Uᵀ + Matrix.of ΔA_Q)ᵀ * (Matrix.of B_Q)ᵀ
+    have hfrob : frobSq X = frobSq (Uᵀ * X * Vᵀ) := by
+      rw [frobSq_mul_orth_right hVT, frobSq_mul_orth_left hUT]
+    rw [hfrob]
+    congr 1
+    have hof_to : ∀ {a b : ℕ} (M : Matrix (Fin a) (Fin b) ℝ), Matrix.of (toRMat M) = M :=
+      fun _ => rfl
+    change Uᵀ * X * Vᵀ =
+      Matrix.of (toRMat (Uᵀ * Matrix.of B_K)) *
+          (baseAQK d H q + Matrix.of (toRMat (Matrix.of ΔA_K * Vᵀ))) +
+        (baseAQK d H q + Matrix.of (toRMat (Matrix.of ΔA_Q * U)))ᵀ *
+          (Matrix.of (toRMat (V * Matrix.of B_Q)))ᵀ
+    rw [hof_to, hof_to, hof_to, hof_to]
+    dsimp only [X]
+    rw [Matrix.mul_add, Matrix.add_mul]
+    congr 1
+    · simp only [Matrix.mul_add, Matrix.add_mul, Matrix.mul_assoc, orth_mul_transpose hV,
+        Matrix.mul_one]
+    · rw [Matrix.transpose_add, Matrix.transpose_add, Matrix.transpose_mul,
+        Matrix.transpose_transpose, Matrix.transpose_mul, Matrix.transpose_mul]
+      simp only [Matrix.mul_add, Matrix.add_mul, Matrix.mul_assoc]
+      rw [← Matrix.mul_assoc Uᵀ U, hU, Matrix.one_mul]
+  obtain ⟨ρ₀, hρ₀, hlin⟩ := attnQKLin_hasLaplacePair (d := d) hqH hqd
+  let c : ℝ := (d : ℝ) + 1
+  have hc1 : 1 ≤ c := by dsimp [c]; linarith [Nat.cast_nonneg (α := ℝ) d]
+  have hc_pos : 0 < c := by linarith
+  refine ⟨ρ₀ / c, div_pos hρ₀ hc_pos, fun ρ hρ hρle => ?_⟩
+  have hcρ_le : c * ρ ≤ ρ₀ := by
+    have h1 := mul_le_mul_of_nonneg_left hρle hc_pos.le
+    have h2 : c * (ρ₀ / c) = ρ₀ := mul_div_cancel₀ ρ₀ hc_pos.ne'
+    linarith
+  have hρc_le : ρ / c ≤ ρ₀ := by
+    have h1 : ρ ≤ ρ₀ := by nlinarith
+    have h2 : ρ / c ≤ ρ := div_le_self hρ.le hc1
+    linarith
+  have hmeas_box : ∀ r : ℝ, MeasurableSet (attnPairBox d H r) := fun r =>
+    ((measurableSet_matBox r).prod ((measurableSet_matBox r).prod (measurableSet_matBox r))).prod
+      (measurableSet_matBox r)
+  have hmeas_lin : Measurable (attnQKLinLoss d H q) := by
+    unfold attnQKLinLoss frobSq
+    simp only [Matrix.add_apply, Matrix.mul_apply, Matrix.transpose_apply, Matrix.of_apply]
+    fun_prop
+  have hΦ_fwd : ∀ θ ∈ attnPairBox d H ρ, Φ θ ∈ attnPairBox d H (c * ρ) := by
+    rintro ⟨⟨B_K, ΔA_Q, ΔA_K⟩, B_Q⟩ ⟨⟨hBK, hAQ, hAK⟩, hBQ⟩
+    exact ⟨⟨orth_mul_left_mem_matBox hUT hρ.le hBK,
+            orth_mul_right_mem_matBox hU hρ.le hAQ,
+            orth_mul_right_mem_matBox hVT hρ.le hAK⟩,
+           orth_mul_left_mem_matBox hV hρ.le hBQ⟩
+  have hΦ_back : ∀ θ' ∈ attnPairBox d H (ρ / c), Φ.symm θ' ∈ attnPairBox d H ρ := by
+    rintro ⟨⟨B_K', ΔA_Q', ΔA_K'⟩, B_Q'⟩ ⟨⟨hBK, hAQ, hAK⟩, hBQ⟩
+    have hcr : c * (ρ / c) = ρ := mul_div_cancel₀ ρ hc_pos.ne'
+    have hρc_nn : 0 ≤ ρ / c := div_nonneg hρ.le hc_pos.le
+    have hU' : (Uᵀ)ᵀ = U := Matrix.transpose_transpose U
+    have hV' : (Vᵀ)ᵀ = V := Matrix.transpose_transpose V
+    refine ⟨⟨?_, ?_, ?_⟩, ?_⟩
+    · change toRMat ((Uᵀ)ᵀ * Matrix.of B_K') ∈ matBox ρ
+      rw [hU', ← hcr]; exact orth_mul_left_mem_matBox hU hρc_nn hBK
+    · change toRMat (Matrix.of ΔA_Q' * Uᵀ) ∈ matBox ρ
+      rw [← hcr]; exact orth_mul_right_mem_matBox hUT hρc_nn hAQ
+    · change toRMat (Matrix.of ΔA_K' * (Vᵀ)ᵀ) ∈ matBox ρ
+      rw [hV', ← hcr]; exact orth_mul_right_mem_matBox hV hρc_nn hAK
+    · change toRMat (Vᵀ * Matrix.of B_Q') ∈ matBox ρ
+      rw [← hcr]; exact orth_mul_left_mem_matBox hVT hρc_nn hBQ
+  have hbounds : ∀ N : ℝ,
+      SLT.Z (volume.restrict (attnPairBox d H (ρ / c))) (attnQKLinLoss d H q) N ≤
+      SLT.Z (volume.restrict (attnPairBox d H ρ)) (attnQKLinLossGen d H q U V) N ∧
+      SLT.Z (volume.restrict (attnPairBox d H ρ)) (attnQKLinLossGen d H q U V) N ≤
+      SLT.Z (volume.restrict (attnPairBox d H (c * ρ))) (attnQKLinLoss d H q) N := fun N => by
+    have hg : Measurable fun θ' : AttnPairParam d H =>
+        ENNReal.ofReal (Real.exp (-(N * attnQKLinLoss d H q θ'))) :=
+      ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp ((measurable_const.mul hmeas_lin).neg))
+    constructor
+    · unfold SLT.Z
+      rw [← lintegral_indicator (hmeas_box (ρ / c)), ← lintegral_indicator (hmeas_box ρ),
+        ← hΦ_mp.lintegral_comp (hg.indicator (hmeas_box (ρ / c)))]
+      refine lintegral_mono fun θ => ?_
+      by_cases hmem : Φ θ ∈ attnPairBox d H (ρ / c)
+      · have hθ : θ ∈ attnPairBox d H ρ := by
+          simpa only [MeasurableEquiv.symm_apply_apply] using hΦ_back (Φ θ) hmem
+        rw [Set.indicator_of_mem hmem, Set.indicator_of_mem hθ, hΦ_loss θ]
+      · rw [Set.indicator_of_notMem hmem]; exact bot_le
+    · unfold SLT.Z
+      rw [← lintegral_indicator (hmeas_box ρ), ← lintegral_indicator (hmeas_box (c * ρ)),
+        ← hΦ_mp.lintegral_comp (hg.indicator (hmeas_box (c * ρ)))]
+      refine lintegral_mono fun θ => ?_
+      by_cases hmem : θ ∈ attnPairBox d H ρ
+      · rw [Set.indicator_of_mem hmem, Set.indicator_of_mem (hΦ_fwd θ hmem), hΦ_loss θ]
+      · rw [Set.indicator_of_notMem hmem]; exact bot_le
+  have hlo := hlin (ρ / c) (div_pos hρ hc_pos) hρc_le
+  have hhi := hlin (c * ρ) (mul_pos hc_pos hρ) hcρ_le
+  refine ⟨hlo.1, ?_, ?_⟩
+  · exact hlo.2.1.mono (Filter.Eventually.of_forall fun N => (hbounds N).1)
+  · exact hhi.2.2.mono (Filter.Eventually.of_forall fun N => (hbounds N).2)
+
+/-- **Joint `Q+K` Self-Attention LoRA Exact Learning Pair for Arbitrary Orthogonal Initializations
+(`[LC]`, exact to all orders):**
+For ALL `d, H, q : ℕ` with `q ≤ H` and `q ≤ d`, and ALL orthogonal `U, V ∈ O(d)` (`Uᵀ U = I`,
+`Vᵀ V = I`) — including completely orthogonal subspaces `A_{Q,0} ⊥ A_{K,0}` or independent random
+subspaces — the exact all-orders `Q+K` loss around `A_{Q,0} = baseAQK * Uᵀ`, `A_{K,0} = baseAQK * V`
+has exact learning pair
+`((q² + 2 q (d - q)) / 2 + awLambda (d - q) (d - q) (2*H - 2*q), awMult (d - q) (d - q) (2*H - 2*q))`. -/
+theorem attention_QK_general_exact_pair {d H q : ℕ} (hqH : q ≤ H) (hqd : q ≤ d)
+    (U V : Matrix (Fin d) (Fin d) ℝ) (hU : Uᵀ * U = 1) (hV : Vᵀ * V = 1) :
+    ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ : ℝ, 0 < δ → δ ≤ δ₀ →
+      SLT.HasLaplacePair
+        (SLT.Z (volume.restrict (attnPairBox d H δ)) (attnQKLossGen d H q U V))
+        (((q : ℝ) * q + 2 * q * (d - q)) / 2 + awLambda (d - q) (d - q) (2 * H - 2 * q))
+        (awMult (d - q) (d - q) (2 * H - 2 * q)) := by
+  let B_P : ℝ → Set (RMat d H × RMat H d × RMat H d) := fun ρ =>
+    matBox ρ ×ˢ matBox ρ ×ˢ matBox ρ
+  let M : (RMat d H × RMat H d × RMat H d) → Matrix (Fin d) (Fin d) ℝ := fun p =>
+    (1 + Matrix.of p.1 * (baseAQK d H q * V + Matrix.of p.2.2))ᵀ
+  have hM_cont : Continuous M := by
+    refine continuous_pi fun i => continuous_pi fun j => ?_
+    simp only [M, Matrix.transpose_apply, Matrix.add_apply, Matrix.mul_apply, Matrix.of_apply]
+    fun_prop
+  have hM0 : M 0 = 1 := by
+    ext i j
+    simp [M, Matrix.transpose_apply, Matrix.mul_apply, Matrix.one_apply]
+  have hL_raw_meas : Measurable (attnQKLossGen d H q U V) := by
+    unfold attnQKLossGen frobSq
+    simp only [Matrix.sub_apply, Matrix.mul_apply, Matrix.transpose_apply, Matrix.add_apply,
+      Matrix.of_apply]
+    fun_prop
+  have hL_lin_meas : Measurable (attnQKLinLossGen d H q U V) := by
+    unfold attnQKLinLossGen frobSq
+    simp only [Matrix.add_apply, Matrix.mul_apply, Matrix.transpose_apply, Matrix.of_apply]
+    fun_prop
+  have heq : ∀ p B,
+      attnQKLossGen d H q U V (p, B) =
+        attnQKLinLossGen d H q U V (p, toRMat (M p * Matrix.of B)) := by
+    intro p B
+    unfold attnQKLossGen attnQKLinLossGen
+    have hto : Matrix.of (toRMat (M p * Matrix.of B)) = M p * Matrix.of B := rfl
+    rw [hto]
+    exact congrArg frobSq (attnQK_factor (Matrix.of B) (Matrix.of p.1)
+      (baseAQK d H q * Uᵀ + Matrix.of p.2.1) (baseAQK d H q * V + Matrix.of p.2.2))
+  exact hasLaplacePair_of_leftMul_reduction B_P
+    (fun ρ => (measurableSet_matBox ρ).prod ((measurableSet_matBox ρ).prod (measurableSet_matBox ρ)))
+    (fun hle => Set.prod_mono (matBox_mono hle) (Set.prod_mono (matBox_mono hle) (matBox_mono hle)))
+    (fun U' hU' => tripleBox_nhds hU')
+    M hM_cont hM0 (attnQKLossGen d H q U V) (attnQKLinLossGen d H q U V) hL_raw_meas hL_lin_meas heq
+    (attnQKLinGen_hasLaplacePair hqH hqd U V hU hV)
+
+/-- **Complete `Q+K` Flat Cancellation for Arbitrary Orthogonal Initializations (`[LC]`):**
+For ALL `d, H, q : ℕ` with `q ≤ H ≤ d` and ALL orthogonal `U, V ∈ O(d)` (`Uᵀ U = I`, `Vᵀ V = I`),
+the exact all-orders `Q+K` learning pair around `A_{Q,0} = baseAQK * Uᵀ`, `A_{K,0} = baseAQK * V`
+is **identically flat** at `(d * H - H² / 2, 1)`, independent of both `q` and the subspace
+alignment `(U, V)`! -/
+theorem attention_QK_general_flat_pair {d H q : ℕ} (hqH : q ≤ H) (hHd : H ≤ d)
+    (U V : Matrix (Fin d) (Fin d) ℝ) (hU : Uᵀ * U = 1) (hV : Vᵀ * V = 1) :
+    ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ : ℝ, 0 < δ → δ ≤ δ₀ →
+      SLT.HasLaplacePair
+        (SLT.Z (volume.restrict (attnPairBox d H δ)) (attnQKLossGen d H q U V))
+        ((d : ℝ) * H - (H : ℝ) ^ 2 / 2) 1 := by
+  obtain ⟨δ₀, hδ₀, h⟩ := attention_QK_general_exact_pair (d := d) hqH (hqH.trans hHd) U V hU hV
+  refine ⟨δ₀, hδ₀, fun δ hδ hδle => ?_⟩
+  have hpair := h δ hδ hδle
+  have hsq := awLambda_sq_even (d - q) (H - q) (by omega)
+  have h2H : 2 * (H - q) = 2 * H - 2 * q := by omega
+  rw [h2H] at hsq
+  have hc1 : ((d - q : ℕ) : ℝ) = (d : ℝ) - (q : ℝ) := Nat.cast_sub (hqH.trans hHd)
+  have hc2 : ((H - q : ℕ) : ℝ) = (H : ℝ) - (q : ℝ) := Nat.cast_sub hqH
+  rw [hsq.1, hsq.2, hc1, hc2] at hpair
+  have hlam : ((q : ℝ) * q + 2 * q * ((d : ℝ) - q)) / 2 +
+      (((d : ℝ) - q) * ((H : ℝ) - q) - ((H : ℝ) - q) ^ 2 / 2) =
+      (d : ℝ) * H - (H : ℝ) ^ 2 / 2 := by ring
+  rw [hlam] at hpair
+  exact hpair
+
+/-- **Exact All-Orders `q²`-Dimensional Zero-Loss Gauge Orbit for Arbitrary `(U, V)` (`[LC]`):**
+For any `q ≤ H`, `q ≤ d`, any `U, V : Matrix (Fin d) (Fin d) ℝ` (in particular any orthogonal
+`U, V ∈ O(d)`), and any `C ∈ ℝ^{q×q}` with `IsUnit (1 + P_UV * C).det` where `P_UV` is the
+top-left `q × q` block of `V * U`, setting `B_K := U * embed(C)` and
+`B_Q := Vᵀ * embed(-((1 + Cᵀ * P_UVᵀ)⁻¹ * Cᵀ))` satisfies
+`(I_d + B_Q (baseAQK * Uᵀ))ᵀ (I_d + B_K (baseAQK * V)) = I_d` **exactly to all orders**,
+so `attnQKLossGen d H q U V ((B_K, 0, 0), B_Q) = 0`.
+When `A_{Q,0} ⊥ A_{K,0}` (`P_UV = 0`), `1 + P_UV * C = 1` is invertible for *every* `C ∈ ℝ^{q×q}`
+and `D = -Cᵀ` gives an entire flat affine `q²`-dimensional subspace in the zero-loss fiber! -/
+theorem attention_QK_general_gauge_orbit {d H q : ℕ} (hqH : q ≤ H) (hqd : q ≤ d)
+    (U V : Matrix (Fin d) (Fin d) ℝ)
+    (C : Matrix (Fin q) (Fin q) ℝ)
+    (hC : IsUnit (1 + Matrix.submatrix (V * U) (Fin.castLE hqd) (Fin.castLE hqd) * C).det) :
+    let P_UV : Matrix (Fin q) (Fin q) ℝ :=
+      Matrix.submatrix (V * U) (Fin.castLE hqd) (Fin.castLE hqd)
+    let embed : Matrix (Fin q) (Fin q) ℝ → Matrix (Fin d) (Fin H) ℝ := fun X =>
+      Matrix.of fun i r =>
+        if hi : i.1 < q then if hr : r.1 < q then X ⟨i.1, hi⟩ ⟨r.1, hr⟩ else 0 else 0
+    let D : Matrix (Fin q) (Fin q) ℝ := -((1 + Cᵀ * P_UVᵀ)⁻¹ * Cᵀ)
+    let B_K : RMat d H := toRMat (U * embed C)
+    let B_Q : RMat d H := toRMat (Vᵀ * embed D)
+    (1 + Matrix.of B_Q * (baseAQK d H q * Uᵀ))ᵀ * (1 + Matrix.of B_K * (baseAQK d H q * V)) = 1 ∧
+      attnQKLossGen d H q U V ((B_K, 0, 0), B_Q) = 0 := by
+  intro P_UV embed D B_K B_Q
+  let embedDD : Matrix (Fin q) (Fin q) ℝ → Matrix (Fin d) (Fin d) ℝ := fun X =>
+    Matrix.of fun i j =>
+      if hi : i.1 < q then if hj : j.1 < q then X ⟨i.1, hi⟩ ⟨j.1, hj⟩ else 0 else 0
+  have hembed_base : ∀ X : Matrix (Fin q) (Fin q) ℝ, embed X * baseAQK d H q = embedDD X := by
+    intro X
+    ext i j
+    simp only [Matrix.mul_apply, embed, embedDD, baseAQK, Matrix.of_apply]
+    by_cases hi : i.1 < q
+    · by_cases hj : j.1 < q
+      · simp only [hi, hj, ↓reduceDIte]
+        have hjH : j.1 < H := lt_of_lt_of_le hj hqH
+        rw [Finset.sum_eq_single ⟨j.1, hjH⟩]
+        · simp [hj]
+        · intro r _ hr
+          have hne : r.1 ≠ j.1 := fun h => hr (Fin.ext h)
+          simp [hne]
+        · intro h; exact absurd (Finset.mem_univ _) h
+      · simp only [hi, hj, ↓reduceDIte]
+        apply Finset.sum_eq_zero
+        intro r _
+        by_cases hr : r.1 < q
+        · have hne : r.1 ≠ j.1 := by omega
+          simp [hr, hne]
+        · simp [hr]
+    · simp [hi]
+  have hembedDD_transpose : ∀ X : Matrix (Fin q) (Fin q) ℝ, (embedDD X)ᵀ = embedDD Xᵀ := by
+    intro X
+    ext i j
+    simp only [Matrix.transpose_apply, embedDD, Matrix.of_apply]
+    by_cases hi : i.1 < q <;> by_cases hj : j.1 < q <;> simp [hi, hj]
+  have hembedDD_add : ∀ X Y : Matrix (Fin q) (Fin q) ℝ,
+      embedDD X + embedDD Y = embedDD (X + Y) := by
+    intro X Y
+    ext i j
+    simp only [Matrix.add_apply, embedDD, Matrix.of_apply]
+    by_cases hi : i.1 < q <;> by_cases hj : j.1 < q <;> simp [hi, hj]
+  have hembedDD_zero : embedDD 0 = 0 := by
+    ext i j
+    simp only [embedDD, Matrix.of_apply, Matrix.zero_apply]
+    by_cases hi : i.1 < q <;> by_cases hj : j.1 < q <;> simp [hi, hj]
+  have hembedDD_mul_G : ∀ X Y : Matrix (Fin q) (Fin q) ℝ,
+      embedDD X * (V * U) * embedDD Y = embedDD (X * P_UV * Y) := by
+    intro X Y
+    ext i j
+    simp only [Matrix.mul_apply, embedDD, Matrix.of_apply]
+    by_cases hi : i.1 < q
+    · by_cases hj : j.1 < q
+      · simp only [hi, hj, ↓reduceDIte]
+        have hsum_l :
+            ∑ l : Fin d,
+              (∑ k : Fin d,
+                (if hk : k.1 < q then X ⟨i.1, hi⟩ ⟨k.1, hk⟩ else 0) * (V * U) k l) *
+              (if hl : l.1 < q then Y ⟨l.1, hl⟩ ⟨j.1, hj⟩ else 0) =
+            ∑ l : Fin q,
+              (∑ k : Fin q, X ⟨i.1, hi⟩ k * P_UV k l) * Y l ⟨j.1, hj⟩ := by
+          rw [← Finset.sum_filter_add_sum_filter_not (s := Finset.univ)
+            (p := fun l : Fin d => l.1 < q)]
+          have htail_l : ∑ l ∈ Finset.univ.filter (fun l : Fin d => ¬ l.1 < q),
+              (∑ k : Fin d,
+                (if hk : k.1 < q then X ⟨i.1, hi⟩ ⟨k.1, hk⟩ else 0) * (V * U) k l) *
+              (if hl : l.1 < q then Y ⟨l.1, hl⟩ ⟨j.1, hj⟩ else 0) = 0 := by
+            apply Finset.sum_eq_zero
+            intro l hl
+            have hnl : ¬ l.1 < q := (Finset.mem_filter.mp hl).2
+            simp [hnl]
+          rw [htail_l, add_zero]
+          refine Finset.sum_bij
+            (fun (l : Fin d) (hl : l ∈ Finset.univ.filter (fun l : Fin d => l.1 < q)) =>
+              (⟨l.1, (Finset.mem_filter.mp hl).2⟩ : Fin q))
+            (fun _ _ => Finset.mem_univ _)
+            (fun l₁ _ l₂ _ h => Fin.ext (congrArg (Fin.val : Fin q → ℕ) h))
+            (fun r _ => ⟨⟨r.1, lt_of_lt_of_le r.2 hqd⟩, by simp [r.2], by ext; rfl⟩)
+            (fun l hl => ?_)
+          have hl' : l.1 < q := (Finset.mem_filter.mp hl).2
+          simp only [hl', ↓reduceDIte]
+          congr 1
+          rw [← Finset.sum_filter_add_sum_filter_not (s := Finset.univ)
+            (p := fun k : Fin d => k.1 < q)]
+          have htail_k : ∑ k ∈ Finset.univ.filter (fun k : Fin d => ¬ k.1 < q),
+              (if hk : k.1 < q then X ⟨i.1, hi⟩ ⟨k.1, hk⟩ else 0) * (V * U) k l = 0 := by
+            apply Finset.sum_eq_zero
+            intro k hk
+            have hnk : ¬ k.1 < q := (Finset.mem_filter.mp hk).2
+            simp [hnk]
+          rw [htail_k, add_zero]
+          refine Finset.sum_bij
+            (fun (k : Fin d) (hk : k ∈ Finset.univ.filter (fun k : Fin d => k.1 < q)) =>
+              (⟨k.1, (Finset.mem_filter.mp hk).2⟩ : Fin q))
+            (fun _ _ => Finset.mem_univ _)
+            (fun k₁ _ k₂ _ h => Fin.ext (congrArg (Fin.val : Fin q → ℕ) h))
+            (fun r _ => ⟨⟨r.1, lt_of_lt_of_le r.2 hqd⟩, by simp [r.2], by ext; rfl⟩)
+            (fun k hk => ?_)
+          have hk' : k.1 < q := (Finset.mem_filter.mp hk).2
+          simp only [hk', ↓reduceDIte, P_UV, Matrix.submatrix_apply]
+          rfl
+        exact hsum_l
+      · simp only [hi, hj, ↓reduceDIte]
+        apply Finset.sum_eq_zero
+        intro l _
+        by_cases hl : l.1 < q <;> simp [hl]
+    · simp only [hi, ↓reduceDIte]
+      apply Finset.sum_eq_zero
+      intro l _
+      simp
+  -- Matrix identity in `Fin q × Fin q`: `Dᵀ + C + Dᵀ * P_UV * C = 0`.
+  set M : Matrix (Fin q) (Fin q) ℝ := 1 + P_UV * C
+  have hMT_eq : Mᵀ = 1 + Cᵀ * P_UVᵀ := by
+    simp only [M, Matrix.transpose_add, Matrix.transpose_one, Matrix.transpose_mul]
+  have hMT_unit : IsUnit Mᵀ.det := by
+    rw [Matrix.det_transpose]
+    exact hC
+  have hMT_inv_T : (Mᵀ⁻¹)ᵀ * M = 1 := by
+    have hmul : Mᵀ * Mᵀ⁻¹ = 1 := Matrix.mul_nonsing_inv Mᵀ hMT_unit
+    have htr := congrArg Matrix.transpose hmul
+    simpa only [Matrix.transpose_mul, Matrix.transpose_transpose, Matrix.transpose_one] using htr
+  have hDT_cancel : Dᵀ + C + Dᵀ * P_UV * C = 0 := by
+    have hDT_M : Dᵀ * M = -C := by
+      have hD_eq : D = -(Mᵀ⁻¹ * Cᵀ) := by rw [hMT_eq]
+      rw [hD_eq, Matrix.transpose_neg, Matrix.transpose_mul, Matrix.transpose_transpose,
+        Matrix.neg_mul, Matrix.mul_assoc, hMT_inv_T, Matrix.mul_one]
+    have hexp : Dᵀ + C + Dᵀ * P_UV * C = Dᵀ * M + C := by
+      dsimp only [M]
+      rw [Matrix.mul_add, Matrix.mul_one, Matrix.mul_assoc]
+      abel
+    rw [hexp, hDT_M, neg_add_cancel]
+  have hBK_prod : Matrix.of B_K * (baseAQK d H q * V) = U * embedDD C * V := by
+    have hof : Matrix.of B_K = U * embed C := rfl
+    rw [hof, Matrix.mul_assoc U, ← Matrix.mul_assoc (embed C), hembed_base C, Matrix.mul_assoc]
+  have hBQ_prodT : (Matrix.of B_Q * (baseAQK d H q * Uᵀ))ᵀ = U * embedDD Dᵀ * V := by
+    have hof : Matrix.of B_Q = Vᵀ * embed D := rfl
+    rw [hof, Matrix.mul_assoc Vᵀ, ← Matrix.mul_assoc (embed D), hembed_base D,
+      Matrix.transpose_mul, Matrix.transpose_mul, Matrix.transpose_transpose,
+      Matrix.transpose_transpose, hembedDD_transpose D, Matrix.mul_assoc]
+  have h1 :
+      (1 + Matrix.of B_Q * (baseAQK d H q * Uᵀ))ᵀ * (1 + Matrix.of B_K * (baseAQK d H q * V)) = 1 := by
+    rw [Matrix.transpose_add, Matrix.transpose_one, hBQ_prodT, hBK_prod]
+    have hexpand :
+        (1 + U * embedDD Dᵀ * V) * (1 + U * embedDD C * V) =
+          1 + U * (embedDD Dᵀ + embedDD C + embedDD Dᵀ * (V * U) * embedDD C) * V := by
+      simp only [Matrix.mul_add, Matrix.add_mul, Matrix.one_mul, Matrix.mul_one, Matrix.mul_assoc]
+      abel
+    rw [hexpand, hembedDD_mul_G Dᵀ C, hembedDD_add, hembedDD_add, hDT_cancel, hembedDD_zero,
+      Matrix.mul_zero, Matrix.zero_mul, add_zero]
+  refine ⟨h1, ?_⟩
+  unfold attnQKLossGen
+  have h0 : Matrix.of (0 : RMat H d) = 0 := rfl
+  simp only [h0, add_zero, h1, sub_self]
+  unfold frobSq
+  simp
+
 end EatYourFiber
 

@@ -6,7 +6,7 @@
   2. Exact algebraic border-rank gap of the canonical $W$-tensor over *every* field $F$: $\mathrm{geometricBorderRank}(W) = 2 < 3 = \mathrm{tensorRank}(W)$ (`wTensor_geometricBorderRank`, `wTensor_tensorRank`, `wTensor_borderRank_lt_tensorRank`), building directly on OpenAI's vendored `BorderRank.lean` (`card_le_geometricBorderRank_of_minor`).
   3. Sharp quantitative border-rank escape law $\inf_{\|\theta\|_2 \le R} \|T(\theta) - W\|_F^2 \asymp R^{-12}$ (`wTensor_loss_ge_of_paramNormSq`, `wTensor_escape_upper`), achieved by the **centered finite-difference** optimal border-rank curve $\tilde W_\varepsilon = W + \varepsilon^2 e_1^{\otimes 3}$ (beating the textbook one-sided curve $W_\varepsilon$ by a full factor of 2 in the exponent: $R^{-12}$ vs $R^{-6}$).
   4. Exact weight-decay scaling law $\inf_\theta (\|T(\theta) - W\|_F^2 + \gamma \|\theta\|_2^2) \asymp \gamma^{6/7}$ (`wTensor_weightDecay_lower`, `wTensor_weightDecay_upper`).
-  5. **Stretched-exponential Bayesian free energy** $c_1 N^{1/7} \le -\log Z_W^{(2)}(N) \le c_2 N^{1/7}$ (`wPartitionZ_two_le_stretchedExp`, `wPartitionZ_two_ge_stretchedExp`) vs. **width-3 realizable polynomial contrast** $-\log Z_W^{(3)}(N) \le 9 \log N + C_3$ (`wPartitionZ_three_ge_poly`).
+  5. **Stretched-exponential Bayesian free energy** $c_1 N^{1/7} \le -\log Z_W^{(2)}(N) \le c_2 N^{1/7}$ (`wPartitionZ_two_le_stretchedExp`, `wPartitionZ_two_ge_stretchedExp`) vs. **sharp width-3 codimension-8 RLCT contrast** $-\log Z_W^{(3)}(N) \le 4 \log N + C_3$ (`wPartitionZ_three_ge_poly_sharp`, sharpening the elementary $N^{-9}$ bound `wPartitionZ_three_ge_poly` to the exact $\lambda = 4$ exponent).
 - **`[empirical]`** (`experiments/bilinear_border_rank.py`, `experiments/results/bilinear_border_rank.{json,png}`):
   - Multi-start L-BFGS weight-decay scaling ($k=2$ vs $k=3$), SMC + HMC Bayesian free energy and diverging effective LLC $\hat\lambda(\beta) = \beta \mathbb{E}_\beta[L(\theta)]$, and real 1-hidden-layer quadratic MLP $f(x) = W_{\mathrm{out}}(W_{\mathrm{in}} x)^{\odot 2}$ training dynamics.
 
@@ -56,10 +56,11 @@ Balancing $L \asymp R^{-12}$ against $\gamma R^2$ via weighted AM–GM gives the
   - **Width $k = 2$** (`wPartitionZ_two_le_stretchedExp`, `wPartitionZ_two_ge_stretchedExp`):
     $$\left(\frac{1}{32}\right)^{12} e^{-90 N^{1/7}} \le Z_W^{(2)}(N) \le (4\pi)^6 e^{-a_1 N^{1/7}} \qquad (\forall N \ge 1,\; a_1 = 64^{-1} \cdot 4^{-6/7}),$$
     certifying $-\log Z_W^{(2)}(N) \asymp N^{1/7}$ (so the DevInterp / WBIC effective learning coefficient $\hat\lambda(N) = N \mathbb{E}_N[L(\theta)] = N \frac{d}{dN}(-\log Z_W^{(2)}(N))$ **diverges as $N^{1/7}$**!).
-  - **Width $k = 3$** (`wPartitionZ_three_ge_poly`):
-    $$2^{18} e^{-10404} N^{-9} \le Z_W^{(3)}(N) \qquad (\forall N \ge 1),$$
-    so adding **one single neuron** ($k = 2 \to 3$) collapses $-\log Z_W^{(k)}(N)$ from stretched-exponential $\Theta(N^{1/7})$ back to Watanabe polynomial $O(\log N)$, even though both widths have $\inf L = 0$.
-    - *Width-3 fiber geometry remark (`[paper]`):* `wPartitionZ_three_ge_poly` proves the elementary $N^{-P/2} = N^{-9}$ scaling bound around the sparse canonical decomposition `wRealize3` ($e_0\otimes e_0\otimes e_1 + e_0\otimes e_1\otimes e_0 + e_1\otimes e_0\otimes e_0$). Notably, `wRealize3` itself has a **rank-7 singular Jacobian** (first-order perturbations miss $e_1^{\otimes 3}$, which enters quadratically via a rank-6 indefinite quadratic form, giving local $\lambda = 7/2 + \min(1/2, 6/4) = 4.0$), whereas a generic width-3 decomposition such as $W = \frac{1}{2}(e_0+e_1)^{\otimes 3} - \frac{1}{2}(e_0-e_1)^{\otimes 3} - e_1^{\otimes 3}$ is submersive (rank-8 Jacobian) with exact regular codimension-8 RLCT $\lambda = 8/2 = 4.0$.
+  - **Width $k = 3$** (`wPartitionZ_three_ge_poly`, `wPartitionZ_three_ge_poly_sharp`):
+    - Elementary $N^{-P/2}$ bound (`wPartitionZ_three_ge_poly`): $2^{18} e^{-10404} N^{-9} \le Z_W^{(3)}(N)$ ($\forall N \ge 1$).
+    - **Sharp codimension-8 RLCT bound (`wPartitionZ_three_ge_poly_sharp`, `[LC]`):**
+      $$\left(\frac{1}{64}\right)^{10} \cdot 256 \cdot e^{-32807025}\, N^{-4} \le Z_W^{(3)}(N) \qquad (\forall N \ge 1),$$
+      matching the exact codimension-8 regular RLCT $\lambda = 8/2 = 4.0$ (proved via natural-order zero-Jacobian Fubini and an explicit 10D rational fiber chart around the submersive width-3 realization $W = \frac{1}{2}(e_0+e_1)^{\otimes 3} - \frac{1}{2}(e_0-e_1)^{\otimes 3} - e_1^{\otimes 3}$; note that the sparse canonical decomposition `wRealize3` itself has a rank-7 singular Jacobian whose missing $e_1^{\otimes 3}$ direction enters quadratically, still yielding $\lambda = 7/2 + 1/2 = 4.0$). Thus adding **one single neuron** ($k = 2 \to 3$) collapses $-\log Z_W^{(k)}(N)$ from stretched-exponential $\Theta(N^{1/7})$ back to Watanabe polynomial $\le 4\log N + C_3$, even though both widths have $\inf L = 0$.
 
 ### 2.4 Non-Compactness, Prior Tails, and Watanabe's Framework (`[paper]` + `[LC]`)
 

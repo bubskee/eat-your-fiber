@@ -29,6 +29,16 @@ import EatYourFiber
 #print axioms EatYourFiber.lora_fiber_exact_pair
 #print axioms EatYourFiber.lora_subcritical_plateau_exact_pair
 
+-- Complete Unconditional (r*, p, q) Reduced-Rank Regression Fiber Stratification (MAIS-O70)
+#print axioms EatYourFiber.rrrBaseB_mul_rrrBaseA
+#print axioms EatYourFiber.rrr_fiber_exact_pair
+#print axioms EatYourFiber.rrr_lambda_active_plus_excess
+#print axioms EatYourFiber.rrr_fiber_subcritical_plateau
+#print axioms EatYourFiber.rrr_fiber_A_supercritical_parabola
+#print axioms EatYourFiber.rrr_fiber_B_supercritical_parabola
+#print axioms EatYourFiber.rrr_supercritical_mutually_exclusive
+#print axioms EatYourFiber.rrr_fiber_eq_min_component_codim
+
 -- Self-Attention LoRA Coupling Dichotomy: V+O (4x jump) vs Q+K (GL(q) flat cancellation)
 #print axioms EatYourFiber.attnVO_factor
 #print axioms EatYourFiber.attnQK_factor
@@ -42,6 +52,9 @@ import EatYourFiber
 #print axioms EatYourFiber.attention_QK_exact_pair
 #print axioms EatYourFiber.attention_QK_flat_pair
 #print axioms EatYourFiber.attention_coupling_dichotomy_standard_init
+#print axioms EatYourFiber.attention_QK_general_gauge_orbit
+#print axioms EatYourFiber.attention_QK_general_exact_pair
+#print axioms EatYourFiber.attention_QK_general_flat_pair
 
 -- Order-3 Bilinear MLPs, Border-Rank Gap, and Stretched-Exponential SLT (Track 1)
 #print axioms EatYourFiber.exists_zero_loss_iff_tensorRank_le
@@ -56,6 +69,7 @@ import EatYourFiber
 #print axioms EatYourFiber.wPartitionZ_two_le_stretchedExp
 #print axioms EatYourFiber.wPartitionZ_two_ge_stretchedExp
 #print axioms EatYourFiber.wPartitionZ_three_ge_poly
+#print axioms EatYourFiber.wPartitionZ_three_ge_poly_sharp
 
 -- Vendored OAI Tensor & BorderRank highlights (for Track 1: Bilinear MLPs)
 #print axioms OAI.LinearAlgebra.SpectralBooks.geometricBorderRank_le_tensorRank

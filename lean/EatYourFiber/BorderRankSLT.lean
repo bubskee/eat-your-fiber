@@ -49,6 +49,9 @@ Theory (SLT)** for bilinear MLPs `T(A, B, C) = ∑_{r=1}^k a_r ⊗ b_r ⊗ c_r`:
      collapses the free energy back to polynomial decay `Z_W^{(3)}(N) ≥ c₃ N^{-9}`
      (`-log Z_W^{(3)}(N) ≤ 9 log N + C₃`), even though **both** `k = 2` and `k = 3` have
      `inf_θ L(θ) = 0`!
+   - `wPartitionZ_three_ge_poly_sharp`: sharpens the width-3 realizable lower bound to the
+     **exact codimension-8 RLCT exponent** `Z_W^{(3)}(N) ≥ c₃' N^{-4}` (`λ = 4`, matching the
+     10-dimensional regular fiber inside `ℝ^{18}` via an explicit zero-Jacobian Fubini chart).
 -/
 
 namespace EatYourFiber
@@ -330,7 +333,7 @@ private theorem exists_notMem_finset_of_isAlgClosed {K : Type*} [Field K] [IsAlg
       Polynomial.monic_prod_of_monic _ _ fun a _ => Polynomial.monic_X_sub_C a
     have hdeg_prod : (∏ a ∈ s', (Polynomial.X - Polynomial.C a)).natDegree = s'.card := by
       rw [Polynomial.natDegree_prod_of_monic _ _ fun a _ => Polynomial.monic_X_sub_C a]
-      simp [Polynomial.natDegree_X_sub_C]
+      simp
     have hcard_pos : 0 < s'.card := Finset.card_pos.mpr ⟨0, Finset.mem_insert_self 0 s⟩
     have hdeg_r : r.degree = (s'.card : WithBot ℕ) := by
       rw [show r = (∏ a ∈ s', (Polynomial.X - Polynomial.C a)) + 1 from rfl,
@@ -395,7 +398,7 @@ theorem wTensor_geometricBorderRank_le_two (F : Type*) [Field F] :
             fun r l => if r = 0 then (if l = 0 then 1 else t) else (if l = 0 then 1 else 0), ?_⟩
     funext i j l
     fin_cases i <;> fin_cases j <;> fin_cases l <;>
-      simp [Wpoly, Tensor.rankOne, Fin.sum_univ_two, ht] <;> (try field_simp; try ring)
+      (simp [Wpoly, Tensor.rankOne, Fin.sum_univ_two, ht]; try field_simp)
   -- Since `K = AlgebraicClosure F` is algebraically closed (hence infinite), `q = 0`.
   have hq_zero : q = 0 := by
     by_contra hne
@@ -1627,6 +1630,675 @@ theorem wPartitionZ_three_ge_poly {N : ℝ} (hN : 1 ≤ N) :
   have hρ18 : (2 * ρ) ^ (6 * 3) = (2 : ℝ) ^ 18 * N ^ (-9 : ℝ) := by
     rw [show 6 * 3 = 18 by rfl, mul_pow, hρpow]
   rw [hρ18]
+  linarith
+
+/-! ### 5. Exact codimension-8 RLCT lower bound (`N^{-4}`, `λ = 4`) for width-3 `W`-tensor -/
+
+private theorem volume_vecBox_shifted {n : ℕ} (v₀ : Fin n → ℝ) {ρ : ℝ} (_hρ : 0 ≤ ρ) :
+    volume {v : Fin n → ℝ | ∀ i, v i ∈ Set.Icc (v₀ i - ρ) (v₀ i + ρ)} =
+      ENNReal.ofReal (2 * ρ) ^ n := by
+  have hset : {v : Fin n → ℝ | ∀ i, v i ∈ Set.Icc (v₀ i - ρ) (v₀ i + ρ)} =
+      Set.pi Set.univ (fun i : Fin n => Set.Icc (v₀ i - ρ) (v₀ i + ρ)) := by
+    ext v
+    simp only [Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ, forall_const]
+  rw [hset]
+  change (Measure.pi fun _ : Fin n => (volume : Measure ℝ)) _ = _
+  rw [Measure.pi_pi]
+  have h1 : ∀ i : Fin n, volume (Set.Icc (v₀ i - ρ) (v₀ i + ρ)) = ENNReal.ofReal (2 * ρ) := by
+    intro i
+    rw [Real.volume_Icc]
+    congr 1; ring
+  rw [Finset.prod_congr rfl (fun i _ => h1 i), Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+
+private theorem measurableSet_matBox_shifted {a b : ℕ} (M₀ : RMat a b) (ρ : ℝ) :
+    MeasurableSet {M : RMat a b | ∀ i j, M i j ∈ Set.Icc (M₀ i j - ρ) (M₀ i j + ρ)} := by
+  have hset : {M : RMat a b | ∀ i j, M i j ∈ Set.Icc (M₀ i j - ρ) (M₀ i j + ρ)} =
+      Set.pi Set.univ (fun i : Fin a => Set.pi Set.univ (fun j : Fin b => Set.Icc (M₀ i j - ρ) (M₀ i j + ρ))) := by
+    ext M
+    simp only [Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ, forall_const]
+  rw [hset]
+  exact MeasurableSet.univ_pi fun _ => MeasurableSet.univ_pi fun _ => measurableSet_Icc
+
+private theorem measurableSet_vecBox_shifted {n : ℕ} (v₀ : Fin n → ℝ) (ρ : ℝ) :
+    MeasurableSet {v : Fin n → ℝ | ∀ i, v i ∈ Set.Icc (v₀ i - ρ) (v₀ i + ρ)} := by
+  have hset : {v : Fin n → ℝ | ∀ i, v i ∈ Set.Icc (v₀ i - ρ) (v₀ i + ρ)} =
+      Set.pi Set.univ (fun i : Fin n => Set.Icc (v₀ i - ρ) (v₀ i + ρ)) := by
+    ext v
+    simp only [Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ, forall_const]
+  rw [hset]
+  exact MeasurableSet.univ_pi fun _ => measurableSet_Icc
+
+/-- Assemble the `2 × 3` matrix `B` from its row `0` (`b0`), entry `B 1 0` (`b10`), and remaining
+row-`1` entries `(B 1 1, B 1 2)` (`b1rest`). -/
+private def mkB3 (b0 : Fin 3 → ℝ) (b10 : ℝ) (b1rest : Fin 2 → ℝ) : RMat 2 3 :=
+  fun j r =>
+    match j.1, r.1 with
+    | 0, _ => b0 r
+    | _, 0 => b10
+    | _, 1 => b1rest 0
+    | _, _ => b1rest 1
+
+/-- Measure-preserving Fubini split of `RMat 2 3` into `b0 : Fin 3 → ℝ`, `b10 : ℝ`, and
+`b1rest : Fin 2 → ℝ` (no coordinate permutation or Jacobian needed). -/
+private theorem lintegral_rmat23_split {F : RMat 2 3 → ℝ≥0∞} (hF : Measurable F) :
+    (∫⁻ B : RMat 2 3, F B) =
+      ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ, F (mkB3 b0 b10 b1rest) := by
+  let e1 := MeasurableEquiv.piFinSuccAbove (fun _ : Fin 2 => (Fin 3 → ℝ)) 0
+  let e2 := MeasurableEquiv.piFinSuccAbove (fun _ : Fin 1 => (Fin 3 → ℝ)) 0
+  let e3 := MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => ℝ) 0
+  have hmp1 := MeasureTheory.volume_preserving_piFinSuccAbove (fun _ : Fin 2 => (Fin 3 → ℝ)) 0
+  have hmp2 := MeasureTheory.volume_preserving_piFinSuccAbove (fun _ : Fin 1 => (Fin 3 → ℝ)) 0
+  have hmp3 := MeasureTheory.volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0
+  have hFe1 : Measurable (fun p : (Fin 3 → ℝ) × (Fin 1 → Fin 3 → ℝ) => F (e1.symm p)) :=
+    hF.comp e1.symm.measurable
+  have hstep1 : (∫⁻ B : RMat 2 3, F B) =
+      ∫⁻ p : (Fin 3 → ℝ) × (Fin 1 → Fin 3 → ℝ), F (e1.symm p) := by
+    rw [← hmp1.lintegral_comp hFe1]
+    congr 1; funext B; exact congrArg F (e1.symm_apply_apply B).symm
+  rw [hstep1, Measure.volume_eq_prod, MeasureTheory.lintegral_prod _ hFe1.aemeasurable]
+  congr 1
+  funext b0
+  have hF1 : Measurable (fun r1 : Fin 1 → Fin 3 → ℝ => F (e1.symm (b0, r1))) :=
+    hF.comp (e1.symm.measurable.comp (measurable_const.prodMk measurable_id))
+  have hF1e2 : Measurable (fun q : (Fin 3 → ℝ) × (Fin 0 → Fin 3 → ℝ) => F (e1.symm (b0, e2.symm q))) :=
+    hF1.comp e2.symm.measurable
+  have hstep2 : (∫⁻ r1 : Fin 1 → Fin 3 → ℝ, F (e1.symm (b0, r1))) =
+      ∫⁻ q : (Fin 3 → ℝ) × (Fin 0 → Fin 3 → ℝ), F (e1.symm (b0, e2.symm q)) := by
+    rw [← hmp2.lintegral_comp hF1e2]
+    congr 1; funext r1; exact congrArg (fun r => F (e1.symm (b0, r))) (e2.symm_apply_apply r1).symm
+  rw [hstep2, Measure.volume_eq_prod, MeasureTheory.lintegral_prod _ hF1e2.aemeasurable]
+  have hstep2b : (∫⁻ b1 : Fin 3 → ℝ, ∫⁻ z : Fin 0 → Fin 3 → ℝ, F (e1.symm (b0, e2.symm (b1, z)))) =
+      ∫⁻ b1 : Fin 3 → ℝ, F (e1.symm (b0, e2.symm (b1, Fin.elim0))) := by
+    congr 1; funext b1
+    have hconst : (fun z : Fin 0 → Fin 3 → ℝ => F (e1.symm (b0, e2.symm (b1, z)))) =
+        fun _ => F (e1.symm (b0, e2.symm (b1, Fin.elim0))) := by
+      funext z
+      have hz : z = Fin.elim0 := Subsingleton.elim z Fin.elim0
+      rw [hz]
+    rw [hconst, MeasureTheory.lintegral_const]
+    have hvol0 : (volume : Measure (Fin 0 → Fin 3 → ℝ)) Set.univ = 1 := by
+      change (Measure.pi fun _ : Fin 0 => (volume : Measure (Fin 3 → ℝ))) Set.univ = 1
+      simp
+    rw [hvol0, mul_one]
+  rw [hstep2b]
+  have hF2 : Measurable (fun b1 : Fin 3 → ℝ => F (e1.symm (b0, e2.symm (b1, Fin.elim0)))) :=
+    hF1.comp (e2.symm.measurable.comp (measurable_id.prodMk measurable_const))
+  have hF2e3 : Measurable (fun r : ℝ × (Fin 2 → ℝ) => F (e1.symm (b0, e2.symm (e3.symm r, Fin.elim0)))) :=
+    hF2.comp e3.symm.measurable
+  have hstep3 : (∫⁻ b1 : Fin 3 → ℝ, F (e1.symm (b0, e2.symm (b1, Fin.elim0)))) =
+      ∫⁻ r : ℝ × (Fin 2 → ℝ), F (e1.symm (b0, e2.symm (e3.symm r, Fin.elim0))) := by
+    rw [← hmp3.lintegral_comp hF2e3]
+    congr 1; funext b1
+    exact congrArg (fun x => F (e1.symm (b0, e2.symm (x, Fin.elim0)))) (e3.symm_apply_apply b1).symm
+  rw [hstep3, Measure.volume_eq_prod, MeasureTheory.lintegral_prod _ hF2e3.aemeasurable]
+  congr 1; funext b10; congr 1; funext b1rest
+  congr 1
+  funext j r
+  fin_cases j <;> fin_cases r <;> rfl
+
+/-- Regular fiber base point `A₀ ∈ ℝ^{2×3}`: columns `(1, 1), (1, 0), (0, 1)`. -/
+private def wBaseA : RMat 2 3 :=
+  fun i r =>
+    match i.1, r.1 with
+    | 0, 0 => 1
+    | 1, 0 => 1
+    | 0, 1 => 1
+    | 1, 2 => 1
+    | _, _ => 0
+
+/-- Regular fiber base point `b₀₀ = (2, 1, 1)` for row `0` of `B`. -/
+private def wBaseB0 : Fin 3 → ℝ :=
+  fun r =>
+    match r.1 with
+    | 0 => 2
+    | _ => 1
+
+/-- Exact Cramer's rule identities for solving `G · c₀ = (0, 1, 1)` and `G · c₁ = (1, 0, 0)`. -/
+private theorem cramer3_identities (p0 p1 p2 q0 q1 q2 s0 s1 s2 : ℝ)
+    (hdet : p0 * (q1 * s2 - q2 * s1) - p1 * (q0 * s2 - q2 * s0) + p2 * (q0 * s1 - q1 * s0) ≠ 0) :
+    let detG := p0 * (q1 * s2 - q2 * s1) - p1 * (q0 * s2 - q2 * s0) + p2 * (q0 * s1 - q1 * s0)
+    let c00 := (-p1 * (s2 - q2) + p2 * (s1 - q1)) / detG
+    let c01 := (p0 * (s2 - q2) + p2 * (q0 - s0)) / detG
+    let c02 := (p0 * (q1 - s1) - p1 * (q0 - s0)) / detG
+    let c10 := (q1 * s2 - q2 * s1) / detG
+    let c11 := (q2 * s0 - q0 * s2) / detG
+    let c12 := (q0 * s1 - q1 * s0) / detG
+    (p0 * c00 + p1 * c01 + p2 * c02 = 0) ∧
+    (q0 * c00 + q1 * c01 + q2 * c02 = 1) ∧
+    (s0 * c00 + s1 * c01 + s2 * c02 = 1) ∧
+    (p0 * c10 + p1 * c11 + p2 * c12 = 1) ∧
+    (q0 * c10 + q1 * c11 + q2 * c12 = 0) ∧
+    (s0 * c10 + s1 * c11 + s2 * c12 = 0) := by
+  intro detG c00 c01 c02 c10 c11 c12
+  have hd : detG ≠ 0 := hdet
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · dsimp only [c00, c01, c02]; field_simp [hd]; ring
+  · dsimp only [c00, c01, c02]; field_simp [hd]; dsimp only [detG]; ring
+  · dsimp only [c00, c01, c02]; field_simp [hd]; dsimp only [detG]; ring
+  · dsimp only [c10, c11, c12]; field_simp [hd]; dsimp only [detG]; ring
+  · dsimp only [c10, c11, c12]; field_simp [hd]; ring
+  · dsimp only [c10, c11, c12]; field_simp [hd]; ring
+
+/-- Determinant and Cramer coordinate bounds on the `3 × 3` matrix `G` near `u₀`. -/
+private theorem cramer3_bounds {p0 p1 p2 q0 q1 q2 s0 s1 s2 : ℝ}
+    (hp0 : 7 / 4 ≤ p0 ∧ p0 ≤ 9 / 4)
+    (hq0 : 15 / 16 ≤ q0 ∧ q0 ≤ 17 / 16)
+    (hs0 : 7 / 4 ≤ s0 ∧ s0 ≤ 9 / 4)
+    (hp1 : 15 / 16 ≤ p1 ∧ p1 ≤ 17 / 16)
+    (hq1 : -(1 / 16 : ℝ) ≤ q1 ∧ q1 ≤ 1 / 16)
+    (hs1 : -(1 / 64 : ℝ) ≤ s1 ∧ s1 ≤ 1 / 64)
+    (hp2 : -(1 / 64 : ℝ) ≤ p2 ∧ p2 ≤ 1 / 64)
+    (hq2 : -(1 / 32 : ℝ) ≤ q2 ∧ q2 ≤ 1 / 32)
+    (hs2 : 15 / 16 ≤ s2 ∧ s2 ≤ 17 / 16) :
+    let detG := p0 * (q1 * s2 - q2 * s1) - p1 * (q0 * s2 - q2 * s0) + p2 * (q0 * s1 - q1 * s0)
+    detG ≤ -(1 / 2 : ℝ) ∧
+    |(-p1 * (s2 - q2) + p2 * (s1 - q1)) / detG| ≤ 14 ∧
+    |(p0 * (s2 - q2) + p2 * (q0 - s0)) / detG| ≤ 14 ∧
+    |(p0 * (q1 - s1) - p1 * (q0 - s0)) / detG| ≤ 14 ∧
+    |(q1 * s2 - q2 * s1) / detG| ≤ 14 ∧
+    |(q2 * s0 - q0 * s2) / detG| ≤ 14 ∧
+    |(q0 * s1 - q1 * s0) / detG| ≤ 14 := by
+  intro detG
+  have hdetG_le : detG ≤ -(1 / 2 : ℝ) := by
+    have ht1 : q1 * s2 - q2 * s1 ≤ 1 / 12 := by
+      nlinarith only [hq1.1, hq1.2, hs2.1, hs2.2, hq2.1, hq2.2, hs1.1, hs1.2]
+    have ht2 : 4 / 5 ≤ q0 * s2 - q2 * s0 := by
+      nlinarith only [hq0.1, hq0.2, hs2.1, hs2.2, hq2.1, hq2.2, hs0.1, hs0.2]
+    have ht3 : -(1 / 4 : ℝ) ≤ q0 * s1 - q1 * s0 ∧ q0 * s1 - q1 * s0 ≤ 1 / 4 := by
+      constructor <;> nlinarith only [hq0.1, hq0.2, hs1.1, hs1.2, hq1.1, hq1.2, hs0.1, hs0.2]
+    dsimp only [detG]
+    nlinarith only [hp0.1, hp0.2, hp1.1, hp1.2, hp2.1, hp2.2, ht1, ht2, ht3.1, ht3.2]
+  have hdiv : ∀ x : ℝ, -7 ≤ x → x ≤ 7 → |x / detG| ≤ 14 := by
+    intro x h1 h2
+    rw [abs_div, abs_of_neg (by linarith only [hdetG_le] : detG < 0),
+      div_le_iff₀ (by linarith only [hdetG_le] : 0 < -detG)]
+    have hx : |x| ≤ 7 := abs_le.mpr ⟨h1, h2⟩
+    nlinarith only [hx, hdetG_le]
+  have hs2q2 : 0 ≤ s2 - q2 ∧ s2 - q2 ≤ 2 := by constructor <;> linarith only [hs2.1, hs2.2, hq2.1, hq2.2]
+  have hs1q1 : -(1 : ℝ) ≤ s1 - q1 ∧ s1 - q1 ≤ 1 := by constructor <;> linarith only [hs1.1, hs1.2, hq1.1, hq1.2]
+  have hq0s0 : -(2 : ℝ) ≤ q0 - s0 ∧ q0 - s0 ≤ 2 := by constructor <;> linarith only [hq0.1, hq0.2, hs0.1, hs0.2]
+  refine ⟨hdetG_le, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · have h1 : -(3 : ℝ) ≤ -p1 * (s2 - q2) ∧ -p1 * (s2 - q2) ≤ 3 := by
+      constructor <;> nlinarith only [hp1.1, hp1.2, hs2q2.1, hs2q2.2]
+    have h2 : -(1 : ℝ) ≤ p2 * (s1 - q1) ∧ p2 * (s1 - q1) ≤ 1 := by
+      constructor <;> nlinarith only [hp2.1, hp2.2, hs1q1.1, hs1q1.2]
+    exact hdiv _ (by linarith only [h1.1, h2.1]) (by linarith only [h1.2, h2.2])
+  · have h1 : -(5 : ℝ) ≤ p0 * (s2 - q2) ∧ p0 * (s2 - q2) ≤ 5 := by
+      constructor <;> nlinarith only [hp0.1, hp0.2, hs2q2.1, hs2q2.2]
+    have h2 : -(1 : ℝ) ≤ p2 * (q0 - s0) ∧ p2 * (q0 - s0) ≤ 1 := by
+      constructor <;> nlinarith only [hp2.1, hp2.2, hq0s0.1, hq0s0.2]
+    exact hdiv _ (by linarith only [h1.1, h2.1]) (by linarith only [h1.2, h2.2])
+  · have h1 : -(3 : ℝ) ≤ p0 * (q1 - s1) ∧ p0 * (q1 - s1) ≤ 3 := by
+      constructor <;> nlinarith only [hp0.1, hp0.2, hs1q1.1, hs1q1.2]
+    have h2 : -(3 : ℝ) ≤ p1 * (q0 - s0) ∧ p1 * (q0 - s0) ≤ 3 := by
+      constructor <;> nlinarith only [hp1.1, hp1.2, hq0s0.1, hq0s0.2]
+    exact hdiv _ (by linarith only [h1.1, h2.2]) (by linarith only [h1.2, h2.1])
+  · have h1 : -(1 : ℝ) ≤ q1 * s2 ∧ q1 * s2 ≤ 1 := by
+      constructor <;> nlinarith only [hq1.1, hq1.2, hs2.1, hs2.2]
+    have h2 : -(1 : ℝ) ≤ q2 * s1 ∧ q2 * s1 ≤ 1 := by
+      constructor <;> nlinarith only [hq2.1, hq2.2, hs1.1, hs1.2]
+    exact hdiv _ (by linarith only [h1.1, h2.2]) (by linarith only [h1.2, h2.1])
+  · have h1 : -(2 : ℝ) ≤ q0 * s2 ∧ q0 * s2 ≤ 2 := by
+      constructor <;> nlinarith only [hq0.1, hq0.2, hs2.1, hs2.2]
+    have h2 : -(1 : ℝ) ≤ q2 * s0 ∧ q2 * s0 ≤ 1 := by
+      constructor <;> nlinarith only [hq2.1, hq2.2, hs0.1, hs0.2]
+    exact hdiv _ (by linarith only [h2.1, h1.2]) (by linarith only [h2.2, h1.1])
+  · have h1 : -(1 : ℝ) ≤ q0 * s1 ∧ q0 * s1 ≤ 1 := by
+      constructor <;> nlinarith only [hq0.1, hq0.2, hs1.1, hs1.2]
+    have h2 : -(1 : ℝ) ≤ q1 * s0 ∧ q1 * s0 ≤ 1 := by
+      constructor <;> nlinarith only [hq1.1, hq1.2, hs0.1, hs0.2]
+    exact hdiv _ (by linarith only [h1.1, h2.2]) (by linarith only [h1.2, h2.1])
+
+/-- **Explicit 10-Dimensional Fiber Chart on the Width-3 Zero-Loss Locus of `W`:**
+For *every* choice of the 10 free coordinates `(A, b₀, b₁₀)` in the `1/128`-box around
+`(wBaseA, wBaseB0, 1)`, there exist bounded dependent coordinates `b1rest : Fin 2 → ℝ`
+(`|b1rest k| ≤ 3`) and `C : RMat 2 3` (`|C l r| ≤ 14`) achieving *exact* zero loss
+`bilinearTensor (A, mkB3 b0 b10 b1rest, C) = wTensor ℝ`. -/
+private theorem exists_wFiber_point
+    {A : RMat 2 3} {b0 : Fin 3 → ℝ} {b10 : ℝ}
+    (hA : ∀ i r, A i r ∈ Set.Icc (wBaseA i r - 1 / 128) (wBaseA i r + 1 / 128))
+    (hb0 : ∀ r, b0 r ∈ Set.Icc (wBaseB0 r - 1 / 128) (wBaseB0 r + 1 / 128))
+    (hb10 : b10 ∈ Set.Icc (1 - 1 / 128 : ℝ) (1 + 1 / 128)) :
+    ∃ (b1rest : Fin 2 → ℝ) (C : RMat 2 3),
+      bilinearTensor (A, mkB3 b0 b10 b1rest, C) = wTensor ℝ ∧
+      (∀ k : Fin 2, |b1rest k| ≤ 3) ∧
+      (∀ l : Fin 2, ∀ r : Fin 3, |C l r| ≤ 14) := by
+  set a00 := A 0 0; set a10 := A 1 0
+  set a01 := A 0 1; set a11 := A 1 1
+  set a02 := A 0 2; set a12 := A 1 2
+  set b00 := b0 0; set b01 := b0 1; set b02 := b0 2
+  have ha00 : 127 / 128 ≤ a00 ∧ a00 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ a00 ∧ a00 ≤ 1 + 1 / 128 := hA 0 0; constructor <;> linarith
+  have ha10 : 127 / 128 ≤ a10 ∧ a10 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ a10 ∧ a10 ≤ 1 + 1 / 128 := hA 1 0; constructor <;> linarith
+  have ha01 : 127 / 128 ≤ a01 ∧ a01 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ a01 ∧ a01 ≤ 1 + 1 / 128 := hA 0 1; constructor <;> linarith
+  have ha11 : -(1 / 128 : ℝ) ≤ a11 ∧ a11 ≤ 1 / 128 := by
+    have h : (0 : ℝ) - 1 / 128 ≤ a11 ∧ a11 ≤ 0 + 1 / 128 := hA 1 1; constructor <;> linarith
+  have ha02 : -(1 / 128 : ℝ) ≤ a02 ∧ a02 ≤ 1 / 128 := by
+    have h : (0 : ℝ) - 1 / 128 ≤ a02 ∧ a02 ≤ 0 + 1 / 128 := hA 0 2; constructor <;> linarith
+  have ha12 : 127 / 128 ≤ a12 ∧ a12 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ a12 ∧ a12 ≤ 1 + 1 / 128 := hA 1 2; constructor <;> linarith
+  have hb00 : 255 / 128 ≤ b00 ∧ b00 ≤ 257 / 128 := by
+    have h : (2 : ℝ) - 1 / 128 ≤ b00 ∧ b00 ≤ 2 + 1 / 128 := hb0 0; constructor <;> linarith
+  have hb01 : 127 / 128 ≤ b01 ∧ b01 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ b01 ∧ b01 ≤ 1 + 1 / 128 := hb0 1; constructor <;> linarith
+  have hb02 : 127 / 128 ≤ b02 ∧ b02 ≤ 129 / 128 := by
+    have h : (1 : ℝ) - 1 / 128 ≤ b02 ∧ b02 ≤ 1 + 1 / 128 := hb0 2; constructor <;> linarith
+  have hb10' : 127 / 128 ≤ b10 ∧ b10 ≤ 129 / 128 := by
+    have h := Set.mem_Icc.mp hb10; constructor <;> linarith
+  -- Hyperplane parameter `τ` solving `Φ_τ(E₀) = 0`.
+  set denom0 := a10 * b00 - a00 * b10
+  have hdenom0 : 7 / 8 ≤ denom0 ∧ denom0 ≤ 9 / 8 := by
+    constructor <;> dsimp only [denom0] <;>
+      nlinarith only [ha10.1, ha10.2, hb00.1, hb00.2, ha00.1, ha00.2, hb10'.1, hb10'.2]
+  have hdenom0_pos : 0 < denom0 := by linarith only [hdenom0.1]
+  have hdenom0_ne : denom0 ≠ 0 := hdenom0_pos.ne'
+  set τ := (a10 * b10) / denom0
+  have hτ : 3 / 4 ≤ τ ∧ τ ≤ 5 / 4 := by
+    have hnum : 15 / 16 ≤ a10 * b10 ∧ a10 * b10 ≤ 17 / 16 := by
+      constructor <;> nlinarith only [ha10.1, ha10.2, hb10'.1, hb10'.2]
+    constructor
+    · dsimp only [τ]; rw [le_div_iff₀ hdenom0_pos]; nlinarith only [hnum.1, hdenom0.2]
+    · dsimp only [τ]; rw [div_le_iff₀ hdenom0_pos]; nlinarith only [hnum.2, hdenom0.1]
+  -- Solve `Φ_τ(E₁) = 0` for `b11` and `Φ_τ(E₂) = 0` for `b12`.
+  set d1 := a11 + τ * a01
+  have hd1 : 1 / 2 ≤ d1 ∧ d1 ≤ 2 := by
+    constructor <;> dsimp only [d1] <;> nlinarith only [ha11.1, ha11.2, hτ.1, hτ.2, ha01.1, ha01.2]
+  have hd1_pos : 0 < d1 := by linarith only [hd1.1]
+  have hd1_ne : d1 ≠ 0 := hd1_pos.ne'
+  set b11 := (τ * a11 * b01) / d1
+  have hb11 : -(1 / 32 : ℝ) ≤ b11 ∧ b11 ≤ 1 / 32 := by
+    have h1 : -(5 / 512 : ℝ) ≤ τ * a11 ∧ τ * a11 ≤ 5 / 512 := by
+      constructor <;> nlinarith only [hτ.1, hτ.2, ha11.1, ha11.2]
+    have hnum : -(1 / 64 : ℝ) ≤ τ * a11 * b01 ∧ τ * a11 * b01 ≤ 1 / 64 := by
+      constructor <;> nlinarith only [h1.1, h1.2, hb01.1, hb01.2]
+    constructor
+    · dsimp only [b11]; rw [le_div_iff₀ hd1_pos]; nlinarith only [hnum.1, hd1.1]
+    · dsimp only [b11]; rw [div_le_iff₀ hd1_pos]; nlinarith only [hnum.2, hd1.1]
+  set d2 := a12 + τ * a02
+  have hd2 : 1 / 2 ≤ d2 ∧ d2 ≤ 2 := by
+    constructor <;> dsimp only [d2] <;> nlinarith only [ha12.1, ha12.2, hτ.1, hτ.2, ha02.1, ha02.2]
+  have hd2_pos : 0 < d2 := by linarith only [hd2.1]
+  have hd2_ne : d2 ≠ 0 := hd2_pos.ne'
+  set b12 := (τ * a12 * b02) / d2
+  have hb12 : 0 ≤ b12 ∧ b12 ≤ 3 := by
+    have h1 : 0 ≤ τ * a12 ∧ τ * a12 ≤ 4 / 3 := by
+      constructor <;> nlinarith only [hτ.1, hτ.2, ha12.1, ha12.2]
+    have hnum : 0 ≤ τ * a12 * b02 ∧ τ * a12 * b02 ≤ 3 / 2 := by
+      constructor <;> nlinarith only [h1.1, h1.2, hb02.1, hb02.2]
+    constructor
+    · dsimp only [b12]; exact div_nonneg hnum.1 hd2_pos.le
+    · dsimp only [b12]; rw [div_le_iff₀ hd2_pos]; nlinarith only [hnum.2, hd2.1]
+  -- Entries of the `3 × 3` matrix `G` for coordinates `(0,0), (0,1), (1,0)`.
+  set p0 := a00 * b00; set q0 := a00 * b10; set s0 := a10 * b00
+  set p1 := a01 * b01; set q1 := a01 * b11; set s1 := a11 * b01
+  set p2 := a02 * b02; set q2 := a02 * b12; set s2 := a12 * b02
+  have hp0 : 7 / 4 ≤ p0 ∧ p0 ≤ 9 / 4 := by
+    constructor <;> dsimp only [p0] <;> nlinarith only [ha00.1, ha00.2, hb00.1, hb00.2]
+  have hq0 : 15 / 16 ≤ q0 ∧ q0 ≤ 17 / 16 := by
+    constructor <;> dsimp only [q0] <;> nlinarith only [ha00.1, ha00.2, hb10'.1, hb10'.2]
+  have hs0 : 7 / 4 ≤ s0 ∧ s0 ≤ 9 / 4 := by
+    constructor <;> dsimp only [s0] <;> nlinarith only [ha10.1, ha10.2, hb00.1, hb00.2]
+  have hp1 : 15 / 16 ≤ p1 ∧ p1 ≤ 17 / 16 := by
+    constructor <;> dsimp only [p1] <;> nlinarith only [ha01.1, ha01.2, hb01.1, hb01.2]
+  have hq1 : -(1 / 16 : ℝ) ≤ q1 ∧ q1 ≤ 1 / 16 := by
+    constructor <;> dsimp only [q1] <;> nlinarith only [ha01.1, ha01.2, hb11.1, hb11.2]
+  have hs1 : -(1 / 64 : ℝ) ≤ s1 ∧ s1 ≤ 1 / 64 := by
+    constructor <;> dsimp only [s1] <;> nlinarith only [ha11.1, ha11.2, hb01.1, hb01.2]
+  have hp2 : -(1 / 64 : ℝ) ≤ p2 ∧ p2 ≤ 1 / 64 := by
+    constructor <;> dsimp only [p2] <;> nlinarith only [ha02.1, ha02.2, hb02.1, hb02.2]
+  have hq2 : -(1 / 32 : ℝ) ≤ q2 ∧ q2 ≤ 1 / 32 := by
+    constructor <;> dsimp only [q2] <;> nlinarith only [ha02.1, ha02.2, hb12.1, hb12.2]
+  have hs2 : 15 / 16 ≤ s2 ∧ s2 ≤ 17 / 16 := by
+    constructor <;> dsimp only [s2] <;> nlinarith only [ha12.1, ha12.2, hb02.1, hb02.2]
+  obtain ⟨hdetG_le, hc00_bd, hc01_bd, hc02_bd, hc10_bd, hc11_bd, hc12_bd⟩ :=
+    cramer3_bounds hp0 hq0 hs0 hp1 hq1 hs1 hp2 hq2 hs2
+  have hdetG_ne : p0 * (q1 * s2 - q2 * s1) - p1 * (q0 * s2 - q2 * s0) + p2 * (q0 * s1 - q1 * s0) ≠ 0 := by
+    linarith only [hdetG_le]
+  obtain ⟨he000, he010, he100, he001, he011, he101⟩ :=
+    cramer3_identities p0 p1 p2 q0 q1 q2 s0 s1 s2 hdetG_ne
+  set detG := p0 * (q1 * s2 - q2 * s1) - p1 * (q0 * s2 - q2 * s0) + p2 * (q0 * s1 - q1 * s0)
+  set c00 := (-p1 * (s2 - q2) + p2 * (s1 - q1)) / detG
+  set c01 := (p0 * (s2 - q2) + p2 * (q0 - s0)) / detG
+  set c02 := (p0 * (q1 - s1) - p1 * (q0 - s0)) / detG
+  set c10 := (q1 * s2 - q2 * s1) / detG
+  set c11 := (q2 * s0 - q0 * s2) / detG
+  set c12 := (q0 * s1 - q1 * s0) / detG
+  let b1rest : Fin 2 → ℝ := fun k => match k.1 with | 0 => b11 | _ => b12
+  let C : RMat 2 3 := fun l r =>
+    match l.1, r.1 with
+    | 0, 0 => c00
+    | 0, 1 => c01
+    | 0, _ => c02
+    | _, 0 => c10
+    | _, 1 => c11
+    | _, _ => c12
+  -- Hyperplane identities `a_{1,r} b_{1,r} = τ (s_r - q_r)`.
+  have hφ0 : a10 * b10 = τ * (s0 - q0) := by
+    have hsq : s0 - q0 = denom0 := rfl
+    rw [hsq]; dsimp only [τ]; exact (div_mul_cancel₀ _ hdenom0_ne).symm
+  have hφ1 : a11 * b11 = τ * (s1 - q1) := by
+    have hb : d1 * b11 = τ * a11 * b01 := mul_div_cancel₀ _ hd1_ne
+    dsimp only [d1, s1, q1] at hb ⊢
+    linear_combination hb
+  have hφ2 : a12 * b12 = τ * (s2 - q2) := by
+    have hb : d2 * b12 = τ * a12 * b02 := mul_div_cancel₀ _ hd2_ne
+    dsimp only [d2, s2, q2] at hb ⊢
+    linear_combination hb
+  refine ⟨b1rest, C, ?_, ?_, ?_⟩
+  · funext i j l
+    simp only [bilinearTensor, Fin.sum_univ_three]
+    fin_cases i <;> fin_cases j <;> fin_cases l
+    · change p0 * c00 + p1 * c01 + p2 * c02 = 0; exact he000
+    · change p0 * c10 + p1 * c11 + p2 * c12 = 1; exact he001
+    · change q0 * c00 + q1 * c01 + q2 * c02 = 1; exact he010
+    · change q0 * c10 + q1 * c11 + q2 * c12 = 0; exact he011
+    · change s0 * c00 + s1 * c01 + s2 * c02 = 1; exact he100
+    · change s0 * c10 + s1 * c11 + s2 * c12 = 0; exact he101
+    · change a10 * b10 * c00 + a11 * b11 * c01 + a12 * b12 * c02 = 0
+      rw [hφ0, hφ1, hφ2]
+      linear_combination τ * he100 - τ * he010
+    · change a10 * b10 * c10 + a11 * b11 * c11 + a12 * b12 * c12 = 0
+      rw [hφ0, hφ1, hφ2]
+      linear_combination τ * he101 - τ * he011
+  · intro k
+    fin_cases k
+    · change |b11| ≤ 3; rw [abs_le]; constructor <;> linarith only [hb11.1, hb11.2]
+    · change |b12| ≤ 3; rw [abs_le]; constructor <;> linarith only [hb12.1, hb12.2]
+  · intro l r
+    fin_cases l <;> fin_cases r
+    · exact hc00_bd
+    · exact hc01_bd
+    · exact hc02_bd
+    · exact hc10_bd
+    · exact hc11_bd
+    · exact hc12_bd
+
+/-- **Sharp Width-3 Realizable Polynomial Lower Bound — Exact Codimension-8 RLCT (`λ = 4`) (`[LC]`):**
+Sharpening `wPartitionZ_three_ge_poly` (`N^{-9}`) to the **exact** regular-fiber exponent
+`N^{-4}` (`λ = 8 / 2 = 4`, matching the 10-dimensional zero-loss fiber of `W` in `ℝ^{18}`):
+for all `N ≥ 1`,
+`(1 / 64) ^ 10 * 256 * exp (-32807025) * N ^ (-4) ≤ Z_W^{(3)}(N)`
+(i.e. `-log Z_W^{(3)}(N) ≤ 4 log N + C₃'`).
+
+Proved without Jacobians or the Inverse Function Theorem by slicing `ℝ^{18} = ℝ^{10} × ℝ^8` along
+the 10 free Euclidean coordinates `(A, b₀, b₁₀)` and integrating over `N^{-1/2}`-boxes around the
+explicit rational fiber chart `exists_wFiber_point` in the remaining 8 dependent coordinates. -/
+theorem wPartitionZ_three_ge_poly_sharp {N : ℝ} (hN : 1 ≤ N) :
+    ENNReal.ofReal ((1 / 64 : ℝ) ^ 10 * 256 * Real.exp (-32807025) * N ^ (-4 : ℝ)) ≤
+      wPartitionZ 3 N := by
+  have hN_pos : 0 < N := by linarith
+  let ρ : ℝ := N ^ (-(1 / 2 : ℝ))
+  have hρ_pos : 0 < ρ := by positivity
+  have hρ_le : ρ ≤ 1 := by
+    simp only [ρ]
+    rw [Real.rpow_neg hN_pos.le]
+    exact inv_le_one_of_one_le₀ (Real.one_le_rpow hN (by positivity))
+  have hρ2 : ρ ^ 2 = N⁻¹ := by
+    simp only [ρ]
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hN_pos.le]
+    norm_num
+    exact Real.rpow_neg_one N
+  let g : BilinearParam 2 2 2 3 → ℝ≥0∞ := fun θ =>
+    ENNReal.ofReal (Real.exp (-(N * bilinearLoss (wTensor ℝ) θ + (1 / 2 : ℝ) * paramNormSq θ)))
+  have hg_meas : Measurable g := by
+    unfold g bilinearLoss tensorFrobSq bilinearTensor paramNormSq
+    fun_prop
+  -- Peel `wPartitionZ 3 N` into `A` (6D), `b0` (3D), `b10` (1D), `b1rest` (2D), `C` (6D).
+  have hpeel : wPartitionZ 3 N =
+      ∫⁻ A : RMat 2 3, ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ,
+        ∫⁻ b1rest : Fin 2 → ℝ, ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) := by
+    change (∫⁻ θ : BilinearParam 2 2 2 3, g θ) = _
+    rw [Measure.volume_eq_prod, MeasureTheory.lintegral_prod _ hg_meas.aemeasurable]
+    congr 1; funext A
+    have hBC_meas : Measurable (fun BC : RMat 2 3 × RMat 2 3 => g (A, BC)) :=
+      hg_meas.comp (measurable_const.prodMk measurable_id)
+    rw [Measure.volume_eq_prod, MeasureTheory.lintegral_prod _ hBC_meas.aemeasurable]
+    have hB_meas : Measurable (fun B : RMat 2 3 => ∫⁻ C : RMat 2 3, g (A, B, C)) :=
+      Measurable.lintegral_prod_right' hBC_meas
+    exact lintegral_rmat23_split hB_meas
+  -- Define the 10D free-coordinate box of half-width `1 / 128` around `(wBaseA, wBaseB0, 1)`.
+  let Abox : Set (RMat 2 3) :=
+    {A | ∀ i r, A i r ∈ Set.Icc (wBaseA i r - 1 / 128) (wBaseA i r + 1 / 128)}
+  let b0box : Set (Fin 3 → ℝ) :=
+    {b0 | ∀ r, b0 r ∈ Set.Icc (wBaseB0 r - 1 / 128) (wBaseB0 r + 1 / 128)}
+  let b10box : Set ℝ := Set.Icc (1 - 1 / 128 : ℝ) (1 + 1 / 128)
+  -- For every `(A, b0, b10)` in the 10D box, bound the inner 8D integral below by `exp(-32807025) * (2ρ)^8`.
+  have hinner : ∀ A ∈ Abox, ∀ b0 ∈ b0box, ∀ b10 ∈ b10box,
+      ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 8 ≤
+        ∫⁻ b1rest : Fin 2 → ℝ, ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) := by
+    intro A hA b0 hb0 b10 hb10
+    obtain ⟨b1rest₀, C₀, hT₀, hb1rest₀, hC₀⟩ := exists_wFiber_point hA hb0 hb10
+    let V1 : Set (Fin 2 → ℝ) :=
+      {b1rest | ∀ k, b1rest k ∈ Set.Icc (b1rest₀ k - ρ) (b1rest₀ k + ρ)}
+    let V2 : Set (RMat 2 3) :=
+      {C | ∀ l r, C l r ∈ Set.Icc (C₀ l r - ρ) (C₀ l r + ρ)}
+    -- Uniform coordinate bounds on `θ₀ = (A, mkB3 b0 b10 b1rest₀, C₀)`.
+    have hA_abs : ∀ i r, |A i r| ≤ 14 := by
+      intro i r
+      fin_cases i <;> fin_cases r
+      · have h : (1 : ℝ) - 1 / 128 ≤ A 0 0 ∧ A 0 0 ≤ 1 + 1 / 128 := hA 0 0
+        change |A 0 0| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (1 : ℝ) - 1 / 128 ≤ A 0 1 ∧ A 0 1 ≤ 1 + 1 / 128 := hA 0 1
+        change |A 0 1| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (0 : ℝ) - 1 / 128 ≤ A 0 2 ∧ A 0 2 ≤ 0 + 1 / 128 := hA 0 2
+        change |A 0 2| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (1 : ℝ) - 1 / 128 ≤ A 1 0 ∧ A 1 0 ≤ 1 + 1 / 128 := hA 1 0
+        change |A 1 0| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (0 : ℝ) - 1 / 128 ≤ A 1 1 ∧ A 1 1 ≤ 0 + 1 / 128 := hA 1 1
+        change |A 1 1| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (1 : ℝ) - 1 / 128 ≤ A 1 2 ∧ A 1 2 ≤ 1 + 1 / 128 := hA 1 2
+        change |A 1 2| ≤ 14; rw [abs_le]; constructor <;> linarith
+    have hB₀_abs : ∀ j r, |mkB3 b0 b10 b1rest₀ j r| ≤ 14 := by
+      intro j r
+      fin_cases j <;> fin_cases r
+      · have h : (2 : ℝ) - 1 / 128 ≤ b0 0 ∧ b0 0 ≤ 2 + 1 / 128 := hb0 0
+        change |b0 0| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (1 : ℝ) - 1 / 128 ≤ b0 1 ∧ b0 1 ≤ 1 + 1 / 128 := hb0 1
+        change |b0 1| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h : (1 : ℝ) - 1 / 128 ≤ b0 2 ∧ b0 2 ≤ 1 + 1 / 128 := hb0 2
+        change |b0 2| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · have h := Set.mem_Icc.mp hb10
+        change |b10| ≤ 14; rw [abs_le]; constructor <;> linarith
+      · change |b1rest₀ 0| ≤ 14; linarith [hb1rest₀ 0]
+      · change |b1rest₀ 1| ≤ 14; linarith [hb1rest₀ 1]
+    -- Pointwise lower bound on `g` for `(b1rest, C) ∈ V1 × V2`.
+    have hpt : ∀ b1rest ∈ V1, ∀ C ∈ V2,
+        ENNReal.ofReal (Real.exp (-32807025)) ≤ g (A, mkB3 b0 b10 b1rest, C) := by
+      intro b1rest hb1rest C hC
+      let θ : BilinearParam 2 2 2 3 := (A, mkB3 b0 b10 b1rest, C)
+      let θ₀ : BilinearParam 2 2 2 3 := (A, mkB3 b0 b10 b1rest₀, C₀)
+      have hda : ∀ i r, |θ.1 i r - θ₀.1 i r| ≤ ρ := fun i r => by
+        simp only [θ, θ₀, sub_self, abs_zero]; exact hρ_pos.le
+      have hdb : ∀ j r, |θ.2.1 j r - θ₀.2.1 j r| ≤ ρ := fun j r => by
+        fin_cases j <;> fin_cases r
+        · change |b0 0 - b0 0| ≤ ρ; rw [sub_self, abs_zero]; exact hρ_pos.le
+        · change |b0 1 - b0 1| ≤ ρ; rw [sub_self, abs_zero]; exact hρ_pos.le
+        · change |b0 2 - b0 2| ≤ ρ; rw [sub_self, abs_zero]; exact hρ_pos.le
+        · change |b10 - b10| ≤ ρ; rw [sub_self, abs_zero]; exact hρ_pos.le
+        · have h := Set.mem_Icc.mp (hb1rest 0)
+          change |b1rest 0 - b1rest₀ 0| ≤ ρ; rw [abs_le]; constructor <;> linarith
+        · have h := Set.mem_Icc.mp (hb1rest 1)
+          change |b1rest 1 - b1rest₀ 1| ≤ ρ; rw [abs_le]; constructor <;> linarith
+      have hdc : ∀ l r, |θ.2.2 l r - θ₀.2.2 l r| ≤ ρ := fun l r => by
+        have h := Set.mem_Icc.mp (hC l r)
+        dsimp only [θ, θ₀]; rw [abs_le]; constructor <;> linarith
+      have hθ_1 : ∀ i r, |θ.1 i r| ≤ 15 := fun i r =>
+        (hA_abs i r).trans (by norm_num)
+      have hθ_2 : ∀ j r, |θ.2.1 j r| ≤ 15 := fun j r => by
+        calc |θ.2.1 j r| = |(θ.2.1 j r - θ₀.2.1 j r) + θ₀.2.1 j r| := by ring_nf
+          _ ≤ |θ.2.1 j r - θ₀.2.1 j r| + |θ₀.2.1 j r| := abs_add_le _ _
+          _ ≤ ρ + 14 := add_le_add (hdb j r) (hB₀_abs j r)
+          _ ≤ 15 := by linarith
+      have hθ_3 : ∀ l r, |θ.2.2 l r| ≤ 15 := fun l r => by
+        calc |θ.2.2 l r| = |(θ.2.2 l r - θ₀.2.2 l r) + θ₀.2.2 l r| := by ring_nf
+          _ ≤ |θ.2.2 l r - θ₀.2.2 l r| + |θ₀.2.2 l r| := abs_add_le _ _
+          _ ≤ ρ + 14 := add_le_add (hdc l r) (hC₀ l r)
+          _ ≤ 15 := by linarith
+      have htri : ∀ x y z : ℝ, |x + y + z| ≤ |x| + |y| + |z| := fun x y z =>
+        (abs_add_le (x + y) z).trans (by linarith [abs_add_le x y])
+      have hTdiff : ∀ i j l : Fin 2, |bilinearTensor θ i j l - wTensor ℝ i j l| ≤ 2025 * ρ := by
+        intro i j l
+        rw [← hT₀]
+        simp only [bilinearTensor, Fin.sum_univ_three]
+        have hc0 := cubic_diff_bound (hθ_1 i 0) (hθ_2 j 0) (hθ_3 l 0)
+          ((hA_abs i 0).trans (by norm_num)) ((hB₀_abs j 0).trans (by norm_num))
+          ((hC₀ l 0).trans (by norm_num)) (hda i 0) (hdb j 0) (hdc l 0) (by norm_num) hρ_pos.le
+        have hc1 := cubic_diff_bound (hθ_1 i 1) (hθ_2 j 1) (hθ_3 l 1)
+          ((hA_abs i 1).trans (by norm_num)) ((hB₀_abs j 1).trans (by norm_num))
+          ((hC₀ l 1).trans (by norm_num)) (hda i 1) (hdb j 1) (hdc l 1) (by norm_num) hρ_pos.le
+        have hc2 := cubic_diff_bound (hθ_1 i 2) (hθ_2 j 2) (hθ_3 l 2)
+          ((hA_abs i 2).trans (by norm_num)) ((hB₀_abs j 2).trans (by norm_num))
+          ((hC₀ l 2).trans (by norm_num)) (hda i 2) (hdb j 2) (hdc l 2) (by norm_num) hρ_pos.le
+        have hsplit : (θ.1 i 0 * θ.2.1 j 0 * θ.2.2 l 0 + θ.1 i 1 * θ.2.1 j 1 * θ.2.2 l 1 +
+              θ.1 i 2 * θ.2.1 j 2 * θ.2.2 l 2) -
+            (θ₀.1 i 0 * θ₀.2.1 j 0 * θ₀.2.2 l 0 +
+              θ₀.1 i 1 * θ₀.2.1 j 1 * θ₀.2.2 l 1 +
+              θ₀.1 i 2 * θ₀.2.1 j 2 * θ₀.2.2 l 2) =
+            (θ.1 i 0 * θ.2.1 j 0 * θ.2.2 l 0 - θ₀.1 i 0 * θ₀.2.1 j 0 * θ₀.2.2 l 0) +
+            (θ.1 i 1 * θ.2.1 j 1 * θ.2.2 l 1 - θ₀.1 i 1 * θ₀.2.1 j 1 * θ₀.2.2 l 1) +
+            (θ.1 i 2 * θ.2.1 j 2 * θ.2.2 l 2 - θ₀.1 i 2 * θ₀.2.1 j 2 * θ₀.2.2 l 2) := by ring
+        change |(_ + _ + _) - (_ + _ + _)| ≤ _
+        rw [hsplit]
+        exact (htri _ _ _).trans (by linarith)
+      have hL_le : bilinearLoss (wTensor ℝ) θ ≤ 32805000 * N⁻¹ := by
+        have hsq : ∀ i j l : Fin 2,
+            (bilinearTensor θ i j l - wTensor ℝ i j l) ^ 2 ≤ 4100625 * N⁻¹ := by
+          intro i j l
+          have := hTdiff i j l
+          have h1' : |bilinearTensor θ i j l - wTensor ℝ i j l| ^ 2 ≤ (2025 * ρ) ^ 2 := by
+            nlinarith [abs_nonneg (bilinearTensor θ i j l - wTensor ℝ i j l)]
+          rw [sq_abs] at h1'
+          calc (bilinearTensor θ i j l - wTensor ℝ i j l) ^ 2 ≤ 4100625 * ρ ^ 2 := by linarith
+            _ = 4100625 * N⁻¹ := by rw [hρ2]
+        calc bilinearLoss (wTensor ℝ) θ
+          = ∑ i : Fin 2, ∑ j : Fin 2, ∑ l : Fin 2, (bilinearTensor θ i j l - wTensor ℝ i j l) ^ 2 := rfl
+          _ ≤ ∑ _i : Fin 2, ∑ _j : Fin 2, ∑ _l : Fin 2, (4100625 * N⁻¹) :=
+            Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ =>
+              Finset.sum_le_sum fun l _ => hsq i j l
+          _ = 32805000 * N⁻¹ := by simp; ring
+      have hNL : N * bilinearLoss (wTensor ℝ) θ ≤ 32805000 := by
+        calc N * bilinearLoss (wTensor ℝ) θ ≤ N * (32805000 * N⁻¹) :=
+              mul_le_mul_of_nonneg_left hL_le hN_pos.le
+          _ = 32805000 := by field_simp
+      have hR2_le : paramNormSq θ ≤ 4050 := by
+        have hsq1 : ∀ i r, (θ.1 i r) ^ 2 ≤ 225 := fun i r => by
+          have := hθ_1 i r; rw [← sq_abs]; nlinarith [abs_nonneg (θ.1 i r)]
+        have hsq2 : ∀ j r, (θ.2.1 j r) ^ 2 ≤ 225 := fun j r => by
+          have := hθ_2 j r; rw [← sq_abs]; nlinarith [abs_nonneg (θ.2.1 j r)]
+        have hsq3 : ∀ l r, (θ.2.2 l r) ^ 2 ≤ 225 := fun l r => by
+          have := hθ_3 l r; rw [← sq_abs]; nlinarith [abs_nonneg (θ.2.2 l r)]
+        unfold paramNormSq
+        have hs1 : ∑ i : Fin 2, ∑ r : Fin 3, (θ.1 i r) ^ 2 ≤ 1350 := by
+          calc ∑ i : Fin 2, ∑ r : Fin 3, (θ.1 i r) ^ 2
+            ≤ ∑ _i : Fin 2, ∑ _r : Fin 3, (225 : ℝ) :=
+              Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun r _ => hsq1 i r
+            _ = 1350 := by norm_num
+        have hs2 : ∑ j : Fin 2, ∑ r : Fin 3, (θ.2.1 j r) ^ 2 ≤ 1350 := by
+          calc ∑ j : Fin 2, ∑ r : Fin 3, (θ.2.1 j r) ^ 2
+            ≤ ∑ _j : Fin 2, ∑ _r : Fin 3, (225 : ℝ) :=
+              Finset.sum_le_sum fun j _ => Finset.sum_le_sum fun r _ => hsq2 j r
+            _ = 1350 := by norm_num
+        have hs3 : ∑ l : Fin 2, ∑ r : Fin 3, (θ.2.2 l r) ^ 2 ≤ 1350 := by
+          calc ∑ l : Fin 2, ∑ r : Fin 3, (θ.2.2 l r) ^ 2
+            ≤ ∑ _l : Fin 2, ∑ _r : Fin 3, (225 : ℝ) :=
+              Finset.sum_le_sum fun l _ => Finset.sum_le_sum fun r _ => hsq3 l r
+            _ = 1350 := by norm_num
+        linarith
+      exact ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr (by linarith))
+    -- Integrate over `C ∈ V2` (6D), then over `b1rest ∈ V1` (2D).
+    have hC_low : ∀ b1rest ∈ V1,
+        ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 6 ≤
+          ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) := by
+      intro b1rest hb1rest
+      have hvol2 : volume V2 = ENNReal.ofReal (2 * ρ) ^ 6 := by
+        simpa [V2] using volume_matBox_shifted C₀ hρ_pos.le
+      rw [← hvol2, ← MeasureTheory.setLIntegral_const V2 (ENNReal.ofReal (Real.exp (-32807025)))]
+      refine le_trans ?_ (MeasureTheory.setLIntegral_le_lintegral V2 _)
+      exact MeasureTheory.setLIntegral_mono_ae' (measurableSet_matBox_shifted C₀ ρ)
+        (Filter.Eventually.of_forall fun C hC => hpt b1rest hb1rest C hC)
+    have hvol1 : volume V1 = ENNReal.ofReal (2 * ρ) ^ 2 := by
+      simpa [V1] using volume_vecBox_shifted b1rest₀ hρ_pos.le
+    calc ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 8
+      = (ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 6) * volume V1 := by
+          rw [hvol1, mul_assoc, ← pow_add]
+      _ = ∫⁻ _b1rest in V1,
+            ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 6 :=
+          (MeasureTheory.setLIntegral_const V1 _).symm
+      _ ≤ ∫⁻ b1rest in V1, ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_mono_ae' (measurableSet_vecBox_shifted b1rest₀ ρ)
+            (Filter.Eventually.of_forall hC_low)
+      _ ≤ ∫⁻ b1rest : Fin 2 → ℝ, ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_le_lintegral V1 _
+  -- Integrate the constant inner lower bound over `b10 ∈ b10box` (1D), `b0 ∈ b0box` (3D), `A ∈ Abox` (6D).
+  set innerLB : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-32807025)) * ENNReal.ofReal (2 * ρ) ^ 8
+  have hvol_b10 : volume b10box = ENNReal.ofReal (1 / 64 : ℝ) := by
+    simp only [b10box, Real.volume_Icc]
+    congr 1; norm_num
+  have hvol_b0 : volume b0box = ENNReal.ofReal (1 / 64 : ℝ) ^ 3 := by
+    rw [show b0box = {b0 : Fin 3 → ℝ | ∀ r, b0 r ∈ Set.Icc (wBaseB0 r - 1 / 128) (wBaseB0 r + 1 / 128)} from rfl,
+      volume_vecBox_shifted wBaseB0 (by norm_num : (0 : ℝ) ≤ 1 / 128)]
+    norm_num
+  have hvol_A : volume Abox = ENNReal.ofReal (1 / 64 : ℝ) ^ 6 := by
+    rw [show Abox = {A : RMat 2 3 | ∀ i r, A i r ∈ Set.Icc (wBaseA i r - 1 / 128) (wBaseA i r + 1 / 128)} from rfl,
+      volume_matBox_shifted wBaseA (by norm_num : (0 : ℝ) ≤ 1 / 128)]
+    norm_num
+  have h10_low : ∀ A ∈ Abox, ∀ b0 ∈ b0box,
+      innerLB * ENNReal.ofReal (1 / 64 : ℝ) ≤
+        ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ, ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) := by
+    intro A hA b0 hb0
+    rw [← hvol_b10, ← MeasureTheory.setLIntegral_const b10box innerLB]
+    refine le_trans ?_ (MeasureTheory.setLIntegral_le_lintegral b10box _)
+    exact MeasureTheory.setLIntegral_mono_ae' measurableSet_Icc
+      (Filter.Eventually.of_forall fun b10 hb10 => hinner A hA b0 hb0 b10 hb10)
+  have h0_low : ∀ A ∈ Abox,
+      innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 4 ≤
+        ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ,
+          ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) := by
+    intro A hA
+    calc innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 4
+      = (innerLB * ENNReal.ofReal (1 / 64 : ℝ)) * volume b0box := by
+          rw [hvol_b0, mul_assoc innerLB, ← pow_succ']
+      _ = ∫⁻ _b0 in b0box, innerLB * ENNReal.ofReal (1 / 64 : ℝ) :=
+          (MeasureTheory.setLIntegral_const b0box _).symm
+      _ ≤ ∫⁻ b0 in b0box, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ,
+            ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_mono_ae' (measurableSet_vecBox_shifted wBaseB0 (1 / 128))
+            (Filter.Eventually.of_forall fun b0 hb0 => h10_low A hA b0 hb0)
+      _ ≤ ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ,
+            ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_le_lintegral b0box _
+  have htotal : innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 10 ≤ wPartitionZ 3 N := by
+    rw [hpeel]
+    calc innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 10
+      = (innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 4) * volume Abox := by
+          rw [hvol_A, mul_assoc innerLB, ← pow_add]
+      _ = ∫⁻ _A in Abox, innerLB * ENNReal.ofReal (1 / 64 : ℝ) ^ 4 :=
+          (MeasureTheory.setLIntegral_const Abox _).symm
+      _ ≤ ∫⁻ A in Abox, ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ,
+            ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_mono_ae' (measurableSet_matBox_shifted wBaseA (1 / 128))
+            (Filter.Eventually.of_forall h0_low)
+      _ ≤ ∫⁻ A : RMat 2 3, ∫⁻ b0 : Fin 3 → ℝ, ∫⁻ b10 : ℝ, ∫⁻ b1rest : Fin 2 → ℝ,
+            ∫⁻ C : RMat 2 3, g (A, mkB3 b0 b10 b1rest, C) :=
+          MeasureTheory.setLIntegral_le_lintegral Abox _
+  refine le_trans ?_ htotal
+  -- Simplify `innerLB * ofReal(1/64)^10` into `ofReal((1/64)^10 * 256 * exp(-32807025) * N^{-4})`.
+  have hρpow : ρ ^ 8 = N ^ (-4 : ℝ) := by
+    simp only [ρ]
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hN_pos.le]
+    norm_num
+  have h2ρ8 : (2 * ρ) ^ 8 = 256 * N ^ (-4 : ℝ) := by
+    rw [mul_pow, hρpow]
+    norm_num
+  dsimp only [innerLB]
+  rw [← ENNReal.ofReal_pow (by positivity : (0 : ℝ) ≤ 2 * ρ),
+    ← ENNReal.ofReal_pow (by norm_num : (0 : ℝ) ≤ 1 / 64),
+    ← ENNReal.ofReal_mul (Real.exp_pos _).le,
+    ← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ Real.exp (-32807025) * (2 * ρ) ^ 8)]
+  apply ENNReal.ofReal_le_ofReal
+  rw [h2ρ8]
   linarith
 
 end EatYourFiber
