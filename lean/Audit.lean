@@ -88,13 +88,24 @@ import EatYourFiber
 #print axioms EatYourFiber.cayleyDet_sq_ge_of_modePencils
 #print axioms EatYourFiber.cayleyDet_ge_of_modePencils
 #print axioms EatYourFiber.local_cayleyDet_escape_lower
+#print axioms EatYourFiber.cayleyDet_near_wall_linear
+#print axioms EatYourFiber.GenericWallHyp.Lwall_pos
+#print axioms EatYourFiber.GenericWallHyp.Lwall_eq_sInf
+#print axioms EatYourFiber.GenericWallHyp.Lwall_unique
+#print axioms EatYourFiber.GenericWallHyp.of_nondeg
 #print axioms EatYourFiber.generic_escape_lower
 #print axioms EatYourFiber.generic_weightDecay_lower
 #print axioms EatYourFiber.genericPartitionZ_two_le_stretchedExp
+#print axioms EatYourFiber.cayleyDet_applyGL3
+#print axioms EatYourFiber.cayleyDet_applyGL3_wTensor
 #print axioms EatYourFiber.gl3CenteredCurve_tensor
 #print axioms EatYourFiber.gl3_escape_upper
 #print axioms EatYourFiber.gl3_weightDecay_upper
 #print axioms EatYourFiber.gl3PartitionZ_two_ge_stretchedExp
+#print axioms EatYourFiber.generic_escape_twoSided
+#print axioms EatYourFiber.generic_weightDecay_twoSided
+#print axioms EatYourFiber.genericPartitionZ_two_stretchedExp_twoSided
+#print axioms EatYourFiber.generic_nearMinimizer_scaling
 #print axioms EatYourFiber.t3Tensor_loss_ge_one
 #print axioms EatYourFiber.t3Tensor_genericWallHyp
 #print axioms EatYourFiber.t3Tensor_excessLoss_ge_of_paramNormSq
@@ -103,6 +114,11 @@ import EatYourFiber
 #print axioms EatYourFiber.t3Tensor_weightDecay_upper
 #print axioms EatYourFiber.t3PartitionZ_two_le_stretchedExp
 #print axioms EatYourFiber.t3PartitionZ_two_ge_stretchedExp
+#print axioms EatYourFiber.exists_gl3_wTensor_of_cayleyDet_zero
+#print axioms EatYourFiber.isOpen_t3Ball
+#print axioms EatYourFiber.volume_t3Ball_pos
+#print axioms EatYourFiber.exists_genericWallHyp_and_gl3_on_t3Ball
+#print axioms EatYourFiber.t3Ball_twoSided_laws
 
 -- Vendored OAI Tensor & BorderRank highlights (for Track 1: Bilinear MLPs)
 #print axioms OAI.LinearAlgebra.SpectralBooks.geometricBorderRank_le_tensorRank

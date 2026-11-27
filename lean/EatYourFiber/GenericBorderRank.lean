@@ -27,7 +27,7 @@ real-rank-3 border-rank class** `{T* ∈ ℝ^{2×2×2} | Det(T*) < 0}`:
      open set of **strictly positive Lebesgue measure** (explicitly containing the `L^∞`-box of
      half-width `1/8` around `t3Tensor ℝ`).
 
-2. **Universal Unconditional `R^{-6}` Hyperdeterminant Barrier & Local/General Escape Laws:**
+2. **Universal Unconditional `R^{-6}` Hyperdeterminant Barrier & General Two-Sided Framework:**
    - `mode1PencilSq`, `mode2PencilSq`, `mode3PencilSq`: the three `SO(2)³`-invariant squared
      mode slice-pencil invariants `2 (det M₀)² + 2 (det M₁)² + (tr(adj M₀ M₁))²`.
    - `cayleyDet_sq_ge_of_modePencils`: for *every* `θ : BilinearParam 2 2 2 2`,
@@ -35,24 +35,38 @@ real-rank-3 border-rank class** `{T* ∈ ℝ^{2×2×2} | Det(T*) < 0}`:
      This pinpoints the exact algebraic obstruction: rank-1 / multilinear-rank `< (2,2,2)` tensors
      have `Q₁ Q₂ Q₃ = 0` and can hit `Det = 0` at finite norm, whereas on *any* neighborhood bounded
      away from degenerate slice pencils (`Q_k ≥ m₀² > 0`), `cayleyDet (T(θ)) ≥ 76 m₀³ / ‖θ‖₂⁶`.
-   - `GenericWallHyp`: clean non-degeneracy / strict-Lagrange-multiplier structure yielding the
-     general lower bounds `generic_escape_lower` (`ΔL ≥ c R^{-6}`), `generic_weightDecay_lower`
-     (`ΔL + γ R² ≥ c₁ γ^{3/4}`), and `genericPartitionZ_two_le_stretchedExp`
-     (`-log Z(β) ≥ β L_wall + a₁ β^{1/4} - C`).
-   - `gl3_escape_upper`, `gl3_weightDecay_upper`, `gl3PartitionZ_two_ge_stretchedExp`: matching
-     general upper bounds (and partition-function lower bound) along the `GL(2)³`-transported
-     centered border-rank curve for *any* smooth wall point `T_wall = (G₁, G₂, G₃) · W`.
+   - `GenericWallHyp Tstar Lwall`: strengthened wall hypothesis requiring `cayleyDet Tstar < 0`
+     and pinning `Lwall` to the exact infimum of `‖T - T*‖_F²` over `{T | 0 ≤ cayleyDet T}`
+     (`GenericWallHyp.Lwall_pos`, `GenericWallHyp.Lwall_eq_sInf`, `GenericWallHyp.Lwall_unique`),
+     with automatic near-wall linearity (`cayleyDet_near_wall_linear` & `GenericWallHyp.of_nondeg`
+     via IVT + degree-4 Lipschitz). Yields the conditional lower bounds `generic_escape_lower`
+     (`ΔL ≥ min(δ₀, c R^{-6})`), `generic_weightDecay_lower` (`ΔL + γ R² ≥ c₁ γ^{3/4}`),
+     `genericPartitionZ_two_le_stretchedExp` (`-log Z(β) ≥ β L_wall + a₁ β^{1/4} - C`), and the
+     two-sided near-minimizer scaling corollaries `generic_nearMinimizer_scaling`
+     (`ΔL* ≍ γ^{3/4}` and `‖θ*‖₂² ≍ γ^{-1/4}`).
+   - `gl3_escape_upper`, `gl3_weightDecay_upper`, `gl3PartitionZ_two_ge_stretchedExp`: general upper
+     bounds (and partition-function lower bound) along the `GL(2)³`-transported centered
+     border-rank curve for *any* `T_wall = (G₁, G₂, G₃) · W` with `L_wall := ‖T_wall - T*‖_F²`.
+   - `generic_escape_twoSided`, `generic_weightDecay_twoSided`,
+     `genericPartitionZ_two_stretchedExp_twoSided`: linking theorems pairing the lower and upper
+     bounds with the **exact same `L_wall`** whenever `GenericWallHyp Tstar L_wall` and a
+     `GL(2)³`-orbit wall point attaining `L_wall` coexist.
 
-3. **Unconditional Certification on Canonical `T₃ = Re((e₀ + i e₁)^{⊗3})` (`L_wall = 1`):**
+3. **Unconditional Global Certification on Canonical `T₃` (`L_wall = 1`) & Positive-Measure Open Ball `t3Ball`:**
    - Via an exact integer Hadamard transform into complex-unitary coordinates `(x_k, y_k)_{k=0}^3`
-     and Heron's quartic factorization, we prove *globally and unconditionally* (zero unverified
-     hypotheses!):
-     - `t3Tensor_loss_ge_one`: `∀ T, 0 ≤ cayleyDet T → 1 ≤ ‖T - T₃‖_F²`.
-     - `t3Tensor_genericWallHyp`: unconditional instance of `GenericWallHyp (t3Tensor ℝ) 1`.
-     - `t3Tensor_excessLoss_ge_of_paramNormSq` & `t3Tensor_escape_upper`: `ΔL ≍ R^{-6}`.
-     - `t3Tensor_weightDecay_lower` & `t3Tensor_weightDecay_upper`: `inf (ΔL + γ R²) ≍ γ^{3/4}`.
-     - `t3PartitionZ_two_le_stretchedExp` & `t3PartitionZ_two_ge_stretchedExp`:
-       `-log Z_{T₃}^{(2)}(β) - β ≍ β^{1/4}` for all `β ≥ 1`.
+     and Heron's quartic factorization, we prove *globally and unconditionally* on `T₃`:
+     - `t3Tensor_loss_ge_one`, `t3Tensor_genericWallHyp`,
+       `t3Tensor_excessLoss_ge_of_paramNormSq`, `t3Tensor_escape_upper`,
+       `t3Tensor_weightDecay_lower`, `t3Tensor_weightDecay_upper`,
+       `t3PartitionZ_two_le_stretchedExp`, `t3PartitionZ_two_ge_stretchedExp`.
+   - Via an elementary `2 × 2` matrix orbit classification (`exists_gl3_wTensor_of_cayleyDet_zero`:
+     every `T` with `cayleyDet T = 0` and `Q₁, Q₂, Q₃ > 0` lies in `GL(2)³ · W`), compactness of the
+     sublevel set, and automatic IVT/Lipschitz linearity, we certify the **explicit positive-measure
+     open ball** `t3Ball = {T* | ‖T* - T₃‖_F² < (1/512)²}` (`isOpen_t3Ball`, `volume_t3Ball_pos`):
+     every `T* ∈ t3Ball` unconditionally admits `L_wall > 0`, `GenericWallHyp T* L_wall`, and an
+     attaining `GL(2)³` wall point (`exists_genericWallHyp_and_gl3_on_t3Ball`), hence satisfies all
+     three two-sided laws (`R^{-6}`, `γ^{3/4}`, `β^{1/4}`) with **zero hypotheses**
+     (`t3Ball_twoSided_laws`).
 -/
 
 namespace EatYourFiber
@@ -535,13 +549,299 @@ theorem local_cayleyDet_escape_lower (θ : BilinearParam 2 2 2 2) {m₀ : ℝ} (
 
 /-! ### 3. General `GenericWallHyp` framework (`R^{-6}`, `γ^{3/4}`, `β^{1/4}`) and `GL(2)³` upper bounds -/
 
-/-- Non-degeneracy and strict Lagrange-multiplier wall hypothesis for a generic `Det(T*) < 0`
-target tensor `Tstar` with wall loss `Lwall`:
-1. Every `Det(T) ≥ 0` tensor satisfies `Lwall ≤ ‖T - T*‖_F²`.
-2. On the near-wall sublevel set `‖T - T*‖_F² - Lwall < δ₀`, every `Det(T) ≥ 0` tensor stays
+/-- Elementary product difference bound on `[-B, B]`. -/
+private theorem quad_diff_bound {a b a' b' B Δ : ℝ} (hB : 0 ≤ B) (hΔ : 0 ≤ Δ)
+    (hb : |b| ≤ B) (ha' : |a'| ≤ B) (hda : |a - a'| ≤ Δ) (hdb : |b - b'| ≤ Δ) :
+    |a * b - a' * b'| ≤ 2 * B * Δ := by
+  have hid : a * b - a' * b' = (a - a') * b + a' * (b - b') := by ring
+  rw [hid]
+  have h1 : |(a - a') * b| ≤ B * Δ := by
+    rw [abs_mul]
+    have := mul_le_mul hda hb (abs_nonneg _) hΔ
+    linarith
+  have h2 : |a' * (b - b')| ≤ B * Δ := by
+    rw [abs_mul]
+    have := mul_le_mul ha' hdb (abs_nonneg _) hB
+    linarith
+  linarith [abs_add_le ((a - a') * b) (a' * (b - b'))]
+
+/-- Elementary product magnitude bound on `[-B, B]`. -/
+private theorem quad_abs_bound {a b B : ℝ} (hB : 0 ≤ B) (ha : |a| ≤ B) (hb : |b| ≤ B) :
+    |a * b| ≤ B ^ 2 := by
+  rw [abs_mul, sq]
+  exact mul_le_mul ha hb (abs_nonneg _) hB
+
+/-- Elementary Lipschitz bound on `cayleyDet` over the `L^∞`-box `[-B, B]^8`:
+if `|X i j l| ≤ B`, `|Y i j l| ≤ B`, and `|X i j l - Y i j l| ≤ Δ` for all `i, j, l`,
+then `|cayleyDet X - cayleyDet Y| ≤ 128 * B ^ 3 * Δ`. -/
+private theorem cayleyDet_lipschitz {X Y : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {B Δ : ℝ}
+    (hB : 0 ≤ B) (hΔ : 0 ≤ Δ)
+    (hX : ∀ i j l : Fin 2, |X i j l| ≤ B)
+    (hY : ∀ i j l : Fin 2, |Y i j l| ≤ B)
+    (hXY : ∀ i j l : Fin 2, |X i j l - Y i j l| ≤ Δ) :
+    |cayleyDet X - cayleyDet Y| ≤ 128 * B ^ 3 * Δ := by
+  set d0X := X 0 0 0 * X 1 1 0 - X 0 1 0 * X 1 0 0
+  set d0Y := Y 0 0 0 * Y 1 1 0 - Y 0 1 0 * Y 1 0 0
+  set d1X := X 0 0 1 * X 1 1 1 - X 0 1 1 * X 1 0 1
+  set d1Y := Y 0 0 1 * Y 1 1 1 - Y 0 1 1 * Y 1 0 1
+  set trX := X 1 1 0 * X 0 0 1 - X 0 1 0 * X 1 0 1 - X 1 0 0 * X 0 1 1 + X 0 0 0 * X 1 1 1
+  set trY := Y 1 1 0 * Y 0 0 1 - Y 0 1 0 * Y 1 0 1 - Y 1 0 0 * Y 0 1 1 + Y 0 0 0 * Y 1 1 1
+  have hd0X : |d0X| ≤ 2 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hX 0 0 0) (hX 1 1 0)
+    have h2 := quad_abs_bound hB (hX 0 1 0) (hX 1 0 0)
+    exact (abs_sub _ _).trans (by linarith)
+  have hd0Y : |d0Y| ≤ 2 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hY 0 0 0) (hY 1 1 0)
+    have h2 := quad_abs_bound hB (hY 0 1 0) (hY 1 0 0)
+    exact (abs_sub _ _).trans (by linarith)
+  have hd1X : |d1X| ≤ 2 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hX 0 0 1) (hX 1 1 1)
+    have h2 := quad_abs_bound hB (hX 0 1 1) (hX 1 0 1)
+    exact (abs_sub _ _).trans (by linarith)
+  have hd1Y : |d1Y| ≤ 2 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hY 0 0 1) (hY 1 1 1)
+    have h2 := quad_abs_bound hB (hY 0 1 1) (hY 1 0 1)
+    exact (abs_sub _ _).trans (by linarith)
+  have htrX : |trX| ≤ 4 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hX 1 1 0) (hX 0 0 1)
+    have h2 := quad_abs_bound hB (hX 0 1 0) (hX 1 0 1)
+    have h3 := quad_abs_bound hB (hX 1 0 0) (hX 0 1 1)
+    have h4 := quad_abs_bound hB (hX 0 0 0) (hX 1 1 1)
+    have s1 := abs_add_le (X 1 1 0 * X 0 0 1 - X 0 1 0 * X 1 0 1 - X 1 0 0 * X 0 1 1) (X 0 0 0 * X 1 1 1)
+    have s2 := abs_sub (X 1 1 0 * X 0 0 1 - X 0 1 0 * X 1 0 1) (X 1 0 0 * X 0 1 1)
+    have s3 := abs_sub (X 1 1 0 * X 0 0 1) (X 0 1 0 * X 1 0 1)
+    dsimp only [trX]; linarith
+  have htrY : |trY| ≤ 4 * B ^ 2 := by
+    have h1 := quad_abs_bound hB (hY 1 1 0) (hY 0 0 1)
+    have h2 := quad_abs_bound hB (hY 0 1 0) (hY 1 0 1)
+    have h3 := quad_abs_bound hB (hY 1 0 0) (hY 0 1 1)
+    have h4 := quad_abs_bound hB (hY 0 0 0) (hY 1 1 1)
+    have s1 := abs_add_le (Y 1 1 0 * Y 0 0 1 - Y 0 1 0 * Y 1 0 1 - Y 1 0 0 * Y 0 1 1) (Y 0 0 0 * Y 1 1 1)
+    have s2 := abs_sub (Y 1 1 0 * Y 0 0 1 - Y 0 1 0 * Y 1 0 1) (Y 1 0 0 * Y 0 1 1)
+    have s3 := abs_sub (Y 1 1 0 * Y 0 0 1) (Y 0 1 0 * Y 1 0 1)
+    dsimp only [trY]; linarith
+  have hd0_diff : |d0X - d0Y| ≤ 4 * B * Δ := by
+    have h1 := quad_diff_bound hB hΔ (hX 1 1 0) (hY 0 0 0) (hXY 0 0 0) (hXY 1 1 0)
+    have h2 := quad_diff_bound hB hΔ (hX 1 0 0) (hY 0 1 0) (hXY 0 1 0) (hXY 1 0 0)
+    have hid : d0X - d0Y = (X 0 0 0 * X 1 1 0 - Y 0 0 0 * Y 1 1 0) -
+        (X 0 1 0 * X 1 0 0 - Y 0 1 0 * Y 1 0 0) := by dsimp only [d0X, d0Y]; ring
+    rw [hid]; exact (abs_sub _ _).trans (by linarith)
+  have hd1_diff : |d1X - d1Y| ≤ 4 * B * Δ := by
+    have h1 := quad_diff_bound hB hΔ (hX 1 1 1) (hY 0 0 1) (hXY 0 0 1) (hXY 1 1 1)
+    have h2 := quad_diff_bound hB hΔ (hX 1 0 1) (hY 0 1 1) (hXY 0 1 1) (hXY 1 0 1)
+    have hid : d1X - d1Y = (X 0 0 1 * X 1 1 1 - Y 0 0 1 * Y 1 1 1) -
+        (X 0 1 1 * X 1 0 1 - Y 0 1 1 * Y 1 0 1) := by dsimp only [d1X, d1Y]; ring
+    rw [hid]; exact (abs_sub _ _).trans (by linarith)
+  have htr_diff : |trX - trY| ≤ 8 * B * Δ := by
+    have h1 := quad_diff_bound hB hΔ (hX 0 0 1) (hY 1 1 0) (hXY 1 1 0) (hXY 0 0 1)
+    have h2 := quad_diff_bound hB hΔ (hX 1 0 1) (hY 0 1 0) (hXY 0 1 0) (hXY 1 0 1)
+    have h3 := quad_diff_bound hB hΔ (hX 0 1 1) (hY 1 0 0) (hXY 1 0 0) (hXY 0 1 1)
+    have h4 := quad_diff_bound hB hΔ (hX 1 1 1) (hY 0 0 0) (hXY 0 0 0) (hXY 1 1 1)
+    have hid : trX - trY =
+        (X 1 1 0 * X 0 0 1 - Y 1 1 0 * Y 0 0 1) -
+        (X 0 1 0 * X 1 0 1 - Y 0 1 0 * Y 1 0 1) -
+        (X 1 0 0 * X 0 1 1 - Y 1 0 0 * Y 0 1 1) +
+        (X 0 0 0 * X 1 1 1 - Y 0 0 0 * Y 1 1 1) := by dsimp only [trX, trY]; ring
+    rw [hid]
+    have s1 := abs_add_le
+      ((X 1 1 0 * X 0 0 1 - Y 1 1 0 * Y 0 0 1) - (X 0 1 0 * X 1 0 1 - Y 0 1 0 * Y 1 0 1) -
+        (X 1 0 0 * X 0 1 1 - Y 1 0 0 * Y 0 1 1))
+      (X 0 0 0 * X 1 1 1 - Y 0 0 0 * Y 1 1 1)
+    have s2 := abs_sub
+      ((X 1 1 0 * X 0 0 1 - Y 1 1 0 * Y 0 0 1) - (X 0 1 0 * X 1 0 1 - Y 0 1 0 * Y 1 0 1))
+      (X 1 0 0 * X 0 1 1 - Y 1 0 0 * Y 0 1 1)
+    have s3 := abs_sub
+      (X 1 1 0 * X 0 0 1 - Y 1 1 0 * Y 0 0 1)
+      (X 0 1 0 * X 1 0 1 - Y 0 1 0 * Y 1 0 1)
+    linarith
+  have htr_sq : |trX ^ 2 - trY ^ 2| ≤ 64 * B ^ 3 * Δ := by
+    have hid : trX ^ 2 - trY ^ 2 = (trX - trY) * (trX + trY) := by ring
+    rw [hid, abs_mul]
+    have hsum : |trX + trY| ≤ 8 * B ^ 2 := (abs_add_le _ _).trans (by linarith)
+    have hmul := mul_le_mul htr_diff hsum (abs_nonneg _) (by positivity)
+    linarith
+  have hd_prod : |d0X * d1X - d0Y * d1Y| ≤ 16 * B ^ 3 * Δ := by
+    have hid : d0X * d1X - d0Y * d1Y = (d0X - d0Y) * d1X + d0Y * (d1X - d1Y) := by ring
+    rw [hid]
+    have h1 : |(d0X - d0Y) * d1X| ≤ 8 * B ^ 3 * Δ := by
+      rw [abs_mul]
+      have := mul_le_mul hd0_diff hd1X (abs_nonneg _) (by positivity)
+      linarith
+    have h2 : |d0Y * (d1X - d1Y)| ≤ 8 * B ^ 3 * Δ := by
+      rw [abs_mul]
+      have := mul_le_mul hd0Y hd1_diff (abs_nonneg _) (by positivity)
+      linarith
+    exact (abs_add_le _ _).trans (by linarith)
+  have hdet_id : cayleyDet X - cayleyDet Y = (trX ^ 2 - trY ^ 2) - 4 * (d0X * d1X - d0Y * d1Y) := by
+    unfold cayleyDet; dsimp only [d0X, d0Y, d1X, d1Y, trX, trY]; ring
+  rw [hdet_id]
+  have h4 : |4 * (d0X * d1X - d0Y * d1Y)| ≤ 64 * B ^ 3 * Δ := by
+    rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 4)]; linarith
+  exact (abs_sub _ _).trans (by linarith)
+
+/-- Every target with `cayleyDet Tstar < 0` sits at strictly positive Euclidean distance from
+`{T | 0 ≤ cayleyDet T}`: there exists `r > 0` such that `r² ≤ ‖T - Tstar‖_F²` whenever
+`0 ≤ cayleyDet T`. -/
+private theorem wall_lb_pos_of_cayleyDet_neg {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)}
+    (hdet_neg : cayleyDet Tstar < 0) :
+    ∃ r : ℝ, 0 < r ∧ ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T → r ^ 2 ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l) := by
+  let B₀ : ℝ := 2 + Real.sqrt (tensorFrobSq Tstar)
+  have hB₀_ge2 : 2 ≤ B₀ := by dsimp only [B₀]; linarith [Real.sqrt_nonneg (tensorFrobSq Tstar)]
+  have hB₀_pos : 0 < B₀ := by linarith
+  let r : ℝ := min 1 (-cayleyDet Tstar / (256 * B₀ ^ 3))
+  have hr_pos : 0 < r := lt_min one_pos (div_pos (neg_pos.mpr hdet_neg) (by positivity))
+  have hr_le1 : r ≤ 1 := min_le_left _ _
+  have hr_le2 : r ≤ -cayleyDet Tstar / (256 * B₀ ^ 3) := min_le_right _ _
+  refine ⟨r, hr_pos, ?_⟩
+  intro T hdet
+  by_contra hlt
+  push Not at hlt
+  have hdiff : ∀ i j l : Fin 2, |T i j l - Tstar i j l| ≤ r := fun i j l => by
+    have hsq : (T i j l - Tstar i j l) ^ 2 ≤ r ^ 2 :=
+      (sq_entry_le_tensorFrobSq (fun i' j' l' => T i' j' l' - Tstar i' j' l') i j l).trans hlt.le
+    rw [← sq_abs] at hsq
+    nlinarith [abs_nonneg (T i j l - Tstar i j l), hr_pos]
+  have hTstar_abs : ∀ i j l : Fin 2, |Tstar i j l| ≤ Real.sqrt (tensorFrobSq Tstar) := fun i j l => by
+    have hsq : |Tstar i j l| ^ 2 ≤ tensorFrobSq Tstar := by
+      rw [sq_abs]; exact sq_entry_le_tensorFrobSq Tstar i j l
+    exact Real.le_sqrt_of_sq_le hsq
+  have hX : ∀ i j l : Fin 2, |T i j l| ≤ B₀ := fun i j l => by
+    have h1 := hdiff i j l
+    have h2 := hTstar_abs i j l
+    calc |T i j l| = |(T i j l - Tstar i j l) + Tstar i j l| := by ring_nf
+      _ ≤ |T i j l - Tstar i j l| + |Tstar i j l| := abs_add_le _ _
+      _ ≤ r + Real.sqrt (tensorFrobSq Tstar) := add_le_add h1 h2
+      _ ≤ B₀ := by dsimp only [B₀]; linarith
+  have hY : ∀ i j l : Fin 2, |Tstar i j l| ≤ B₀ := fun i j l => by
+    have := hTstar_abs i j l; dsimp only [B₀]; linarith
+  have hlip := cayleyDet_lipschitz hB₀_pos.le hr_pos.le hX hY hdiff
+  have hbd : 128 * B₀ ^ 3 * r ≤ -cayleyDet Tstar / 2 := by
+    calc 128 * B₀ ^ 3 * r
+      ≤ 128 * B₀ ^ 3 * (-cayleyDet Tstar / (256 * B₀ ^ 3)) :=
+        mul_le_mul_of_nonneg_left hr_le2 (by positivity)
+      _ = -cayleyDet Tstar / 2 := by field_simp; ring
+  have hle : cayleyDet T - cayleyDet Tstar ≤ -cayleyDet Tstar / 2 :=
+    (le_abs_self _).trans (hlip.trans hbd)
+  linarith
+
+/-- **Automatic Near-Wall Linear Hyperdeterminant Bound (`[LC]`):**
+For *any* generic target `Tstar` with `cayleyDet Tstar < 0`, *any* positive lower bound `Lwall > 0`
+satisfying `wall_le`, and *any* `δ₀ > 0`, there exists an explicit `α > 0` (from the IVT along the
+straight segment `Tstar → T` and the degree-4 Lipschitz constant of `cayleyDet`) such that every `T`
+with `0 ≤ cayleyDet T` and `‖T - Tstar‖_F² - Lwall < δ₀` satisfies
+`α * cayleyDet T ≤ ‖T - Tstar‖_F² - Lwall`. -/
+theorem cayleyDet_near_wall_linear {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall δ₀ : ℝ}
+    (hdet_neg : cayleyDet Tstar < 0) (hL_pos : 0 < Lwall) (hδ₀ : 0 < δ₀)
+    (hwall_le : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T → Lwall ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l)) :
+    let B := 1 + Real.sqrt (tensorFrobSq Tstar) + Real.sqrt (Lwall + δ₀)
+    let α := Real.sqrt Lwall / (128 * B ^ 3)
+    0 < α ∧ ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T →
+      tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall < δ₀ →
+      α * cayleyDet T ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall := by
+  intro B α
+  have hB_ge1 : 1 ≤ B := by
+    dsimp only [B]
+    linarith [Real.sqrt_nonneg (tensorFrobSq Tstar), Real.sqrt_nonneg (Lwall + δ₀)]
+  have hB_pos : 0 < B := by linarith
+  have hα_pos : 0 < α := by dsimp only [α]; positivity
+  refine ⟨hα_pos, ?_⟩
+  intro T hdet hsmall
+  set D2 := tensorFrobSq (fun i j l => T i j l - Tstar i j l)
+  have hL_le_D2 : Lwall ≤ D2 := hwall_le T hdet
+  have hD2_pos : 0 < D2 := lt_of_lt_of_le hL_pos hL_le_D2
+  by_cases hzero : cayleyDet T = 0
+  · rw [hzero, mul_zero]; linarith
+  have hdet_pos : 0 < cayleyDet T := lt_of_le_of_ne hdet (Ne.symm hzero)
+  let S : ℝ → Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
+    fun t i j l => Tstar i j l + t * (T i j l - Tstar i j l)
+  have hS0 : S 0 = Tstar := by funext i j l; simp [S]
+  have hS1 : S 1 = T := by funext i j l; simp [S]
+  have hf_cont : Continuous (fun t : ℝ => cayleyDet (S t)) := by
+    unfold cayleyDet S; fun_prop
+  have h0_mem : (0 : ℝ) ∈ Set.Icc (cayleyDet (S 0)) (cayleyDet (S 1)) := by
+    rw [hS0, hS1]; exact ⟨hdet_neg.le, hdet_pos.le⟩
+  obtain ⟨t₀, ⟨ht₀0, ht₀1⟩, ht₀_zero⟩ :=
+    intermediate_value_Icc (by norm_num : (0 : ℝ) ≤ 1) hf_cont.continuousOn h0_mem
+  dsimp only at ht₀_zero
+  have hSt₀_dist : tensorFrobSq (fun i j l => S t₀ i j l - Tstar i j l) = t₀ ^ 2 * D2 := by
+    unfold D2 tensorFrobSq S
+    simp only [Fin.sum_univ_two]
+    ring
+  have hL_le_t0 : Lwall ≤ t₀ ^ 2 * D2 := by
+    rw [← hSt₀_dist]
+    exact hwall_le (S t₀) (by rw [ht₀_zero])
+  have h1mt0_D2 : (1 - t₀) * D2 ≤ D2 - Lwall := by
+    have hsq : t₀ ^ 2 ≤ t₀ := by nlinarith
+    have hmul : t₀ ^ 2 * D2 ≤ t₀ * D2 := mul_le_mul_of_nonneg_right hsq hD2_pos.le
+    linarith
+  have hTstar_abs : ∀ i j l : Fin 2, |Tstar i j l| ≤ Real.sqrt (tensorFrobSq Tstar) := fun i j l => by
+    have hsq : |Tstar i j l| ^ 2 ≤ tensorFrobSq Tstar := by
+      rw [sq_abs]; exact sq_entry_le_tensorFrobSq Tstar i j l
+    exact Real.le_sqrt_of_sq_le hsq
+  have hdiff_abs : ∀ i j l : Fin 2, |T i j l - Tstar i j l| ≤ Real.sqrt D2 := fun i j l => by
+    have hsq : |T i j l - Tstar i j l| ^ 2 ≤ D2 := by
+      rw [sq_abs]; exact sq_entry_le_tensorFrobSq (fun i' j' l' => T i' j' l' - Tstar i' j' l') i j l
+    exact Real.le_sqrt_of_sq_le hsq
+  have hsqrt_D2_le : Real.sqrt D2 ≤ Real.sqrt (Lwall + δ₀) :=
+    Real.sqrt_le_sqrt (by linarith)
+  have hS_bound : ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ i j l : Fin 2, |S t i j l| ≤ B := by
+    intro t ⟨ht0, ht1⟩ i j l
+    dsimp only [S]
+    have hmul : |t * (T i j l - Tstar i j l)| ≤ Real.sqrt (Lwall + δ₀) := by
+      rw [abs_mul, abs_of_nonneg ht0]
+      calc t * |T i j l - Tstar i j l|
+        ≤ 1 * Real.sqrt D2 := mul_le_mul ht1 (hdiff_abs i j l) (abs_nonneg _) zero_le_one
+        _ ≤ Real.sqrt (Lwall + δ₀) := by linarith
+    calc |Tstar i j l + t * (T i j l - Tstar i j l)|
+      ≤ |Tstar i j l| + |t * (T i j l - Tstar i j l)| := abs_add_le _ _
+      _ ≤ Real.sqrt (tensorFrobSq Tstar) + Real.sqrt (Lwall + δ₀) := add_le_add (hTstar_abs i j l) hmul
+      _ ≤ B := by dsimp only [B]; linarith
+  have hX : ∀ i j l : Fin 2, |S 1 i j l| ≤ B := hS_bound 1 ⟨by norm_num, le_refl _⟩
+  have hY : ∀ i j l : Fin 2, |S t₀ i j l| ≤ B := hS_bound t₀ ⟨ht₀0, ht₀1⟩
+  have hXY : ∀ i j l : Fin 2, |S 1 i j l - S t₀ i j l| ≤ (1 - t₀) * Real.sqrt D2 := by
+    intro i j l
+    have hid : S 1 i j l - S t₀ i j l = (1 - t₀) * (T i j l - Tstar i j l) := by dsimp only [S]; ring
+    rw [hid, abs_mul, abs_of_nonneg (by linarith)]
+    exact mul_le_mul_of_nonneg_left (hdiff_abs i j l) (by linarith)
+  have hlip := cayleyDet_lipschitz hB_pos.le (mul_nonneg (by linarith) (Real.sqrt_nonneg D2)) hX hY hXY
+  have hdet_le : cayleyDet T ≤ 128 * B ^ 3 * ((1 - t₀) * Real.sqrt D2) := by
+    have hsub : cayleyDet T = cayleyDet (S 1) - cayleyDet (S t₀) := by rw [hS1, ht₀_zero, sub_zero]
+    rw [hsub]; exact (le_abs_self _).trans hlip
+  have hsqrt_prod : Real.sqrt Lwall * Real.sqrt D2 ≤ D2 := by
+    have hle : Real.sqrt Lwall ≤ Real.sqrt D2 := Real.sqrt_le_sqrt hL_le_D2
+    calc Real.sqrt Lwall * Real.sqrt D2
+      ≤ Real.sqrt D2 * Real.sqrt D2 := mul_le_mul_of_nonneg_right hle (Real.sqrt_nonneg _)
+      _ = D2 := Real.mul_self_sqrt hD2_pos.le
+  have hscaled : Real.sqrt Lwall * cayleyDet T ≤ 128 * B ^ 3 * (D2 - Lwall) := by
+    calc Real.sqrt Lwall * cayleyDet T
+      ≤ Real.sqrt Lwall * (128 * B ^ 3 * ((1 - t₀) * Real.sqrt D2)) :=
+        mul_le_mul_of_nonneg_left hdet_le (Real.sqrt_nonneg _)
+      _ = 128 * B ^ 3 * (1 - t₀) * (Real.sqrt Lwall * Real.sqrt D2) := by ring
+      _ ≤ 128 * B ^ 3 * (1 - t₀) * D2 :=
+        mul_le_mul_of_nonneg_left hsqrt_prod (by positivity)
+      _ = 128 * B ^ 3 * ((1 - t₀) * D2) := by ring
+      _ ≤ 128 * B ^ 3 * (D2 - Lwall) :=
+        mul_le_mul_of_nonneg_left h1mt0_D2 (by positivity)
+  have h128_pos : 0 < 128 * B ^ 3 := by positivity
+  calc α * cayleyDet T
+    = (Real.sqrt Lwall * cayleyDet T) / (128 * B ^ 3) := by dsimp only [α]; ring
+    _ ≤ (128 * B ^ 3 * (D2 - Lwall)) / (128 * B ^ 3) :=
+      div_le_div_of_nonneg_right hscaled h128_pos.le
+    _ = D2 - Lwall := by field_simp
+
+/-- Non-degeneracy and strict wall hypothesis for a generic `Det(T*) < 0` target tensor `Tstar`
+with exact wall loss `Lwall = inf {‖T - T*‖_F² | 0 ≤ cayleyDet T}`:
+1. `hdet_neg : cayleyDet Tstar < 0` (generic real-rank-3 target).
+2. `wall_le` and `wall_approachable`: `Lwall` is the exact infimum of `‖T - T*‖_F²` over
+   `{T | 0 ≤ cayleyDet T}` (uniquely determining `Lwall > 0`).
+3. On the near-wall sublevel set `‖T - T*‖_F² - Lwall < δ₀`, every `Det(T) ≥ 0` tensor stays
    bounded away from degenerate multilinear-rank `< (2,2,2)` (including rank-1) points
-   (`m₀² ≤ Q_k(T)`) and obeys the strict positive Lagrange-multiplier bound
-   `α * cayleyDet T ≤ ‖T - T*‖_F² - Lwall`. -/
+   (`m₀² ≤ Q_k(T)`) and obeys the linear hyperdeterminant bound
+   `α * cayleyDet T ≤ ‖T - T*‖_F² - Lwall` (which is derived automatically by
+   `GenericWallHyp.of_nondeg` via `cayleyDet_near_wall_linear`). -/
 structure GenericWallHyp (Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) (Lwall : ℝ) where
   δ₀ : ℝ
   α : ℝ
@@ -549,8 +849,12 @@ structure GenericWallHyp (Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) (Lwall : �
   hδ₀ : 0 < δ₀
   hα : 0 < α
   hm₀ : 0 < m₀
+  hdet_neg : cayleyDet Tstar < 0
   wall_le : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
     0 ≤ cayleyDet T → Lwall ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l)
+  wall_approachable : ∀ ε : ℝ, 0 < ε →
+    ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T ∧ tensorFrobSq (fun i j l => T i j l - Tstar i j l) < Lwall + ε
   near_wall_nondeg : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
     0 ≤ cayleyDet T →
     tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall < δ₀ →
@@ -559,6 +863,81 @@ structure GenericWallHyp (Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) (Lwall : �
     0 ≤ cayleyDet T →
     tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall < δ₀ →
     α * cayleyDet T ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall
+
+/-- `Lwall` in `GenericWallHyp Tstar Lwall` is strictly positive (`[LC]`). -/
+theorem GenericWallHyp.Lwall_pos {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) : 0 < Lwall := by
+  obtain ⟨r, hr_pos, hr_lb⟩ := wall_lb_pos_of_cayleyDet_neg h.hdet_neg
+  have hle : r ^ 2 ≤ Lwall := by
+    by_contra hlt
+    push Not at hlt
+    obtain ⟨T, hdet, hT⟩ := h.wall_approachable (r ^ 2 - Lwall) (by linarith)
+    have hlb := hr_lb T hdet
+    linarith
+  exact lt_of_lt_of_le (sq_pos_of_pos hr_pos) hle
+
+/-- `Lwall` in `GenericWallHyp Tstar Lwall` equals the exact `sInf` of `‖T - T*‖_F²` over
+`{T | 0 ≤ cayleyDet T}` (`[LC]`). -/
+theorem GenericWallHyp.Lwall_eq_sInf {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) :
+    Lwall = sInf {d : ℝ | ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T ∧ d = tensorFrobSq (fun i j l => T i j l - Tstar i j l)} := by
+  set S : Set ℝ := {d : ℝ | ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+    0 ≤ cayleyDet T ∧ d = tensorFrobSq (fun i j l => T i j l - Tstar i j l)}
+  have hne : S.Nonempty := by
+    obtain ⟨T, hdet, _⟩ := h.wall_approachable 1 one_pos
+    exact ⟨tensorFrobSq (fun i j l => T i j l - Tstar i j l), T, hdet, rfl⟩
+  have hbdd : BddBelow S := ⟨Lwall, fun d ⟨T, hdet, hd⟩ => hd ▸ h.wall_le T hdet⟩
+  apply le_antisymm
+  · exact le_csInf hne fun d ⟨T, hdet, hd⟩ => hd ▸ h.wall_le T hdet
+  · refine le_of_forall_pos_le_add fun ε hε => ?_
+    obtain ⟨T, hdet, hT⟩ := h.wall_approachable ε hε
+    have hmem : tensorFrobSq (fun i j l => T i j l - Tstar i j l) ∈ S := ⟨T, hdet, rfl⟩
+    exact (csInf_le hbdd hmem).trans hT.le
+
+/-- `Lwall` in `GenericWallHyp Tstar Lwall` is uniquely determined by `Tstar` (`[LC]`). -/
+theorem GenericWallHyp.Lwall_unique {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {L₁ L₂ : ℝ}
+    (h₁ : GenericWallHyp Tstar L₁) (h₂ : GenericWallHyp Tstar L₂) : L₁ = L₂ :=
+  h₁.Lwall_eq_sInf.trans h₂.Lwall_eq_sInf.symm
+
+/-- Smart constructor for `GenericWallHyp` deriving `near_wall_linear` automatically from
+`cayleyDet_near_wall_linear` (IVT + degree-4 Lipschitz bound). -/
+noncomputable def GenericWallHyp.of_nondeg
+    {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (hdet_neg : cayleyDet Tstar < 0)
+    (wall_le : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T → Lwall ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l))
+    (wall_approachable : ∀ ε : ℝ, 0 < ε →
+      ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+        0 ≤ cayleyDet T ∧ tensorFrobSq (fun i j l => T i j l - Tstar i j l) < Lwall + ε)
+    (δ₀ m₀ : ℝ) (hδ₀ : 0 < δ₀) (hm₀ : 0 < m₀)
+    (near_wall_nondeg : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T →
+      tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall < δ₀ →
+      m₀ ^ 2 ≤ mode1PencilSq T ∧ m₀ ^ 2 ≤ mode2PencilSq T ∧ m₀ ^ 2 ≤ mode3PencilSq T) :
+    GenericWallHyp Tstar Lwall :=
+  have hL_pos : 0 < Lwall := by
+    obtain ⟨r, hr_pos, hr_lb⟩ := wall_lb_pos_of_cayleyDet_neg hdet_neg
+    have hle : r ^ 2 ≤ Lwall := by
+      by_contra hlt
+      push Not at hlt
+      obtain ⟨T, hdet, hT⟩ := wall_approachable (r ^ 2 - Lwall) (by linarith)
+      have hlb := hr_lb T hdet
+      linarith
+    exact lt_of_lt_of_le (sq_pos_of_pos hr_pos) hle
+  let B := 1 + Real.sqrt (tensorFrobSq Tstar) + Real.sqrt (Lwall + δ₀)
+  let hlin := cayleyDet_near_wall_linear hdet_neg hL_pos hδ₀ wall_le
+  { δ₀ := δ₀
+    α := Real.sqrt Lwall / (128 * B ^ 3)
+    m₀ := m₀
+    hδ₀ := hδ₀
+    hα := hlin.1
+    hm₀ := hm₀
+    hdet_neg := hdet_neg
+    wall_le := wall_le
+    wall_approachable := wall_approachable
+    near_wall_nondeg := near_wall_nondeg
+    near_wall_linear := hlin.2 }
 
 /-- **General `R^{-6}` Excess-Loss Lower Bound (`[LC]`):**
 Under `GenericWallHyp Tstar Lwall`, every width-2 parameter `θ` satisfies
@@ -961,14 +1340,169 @@ theorem genericPartitionZ_two_le_stretchedExp
 def matMul2 (G A : RMat 2 2) : RMat 2 2 :=
   fun i r => ∑ k : Fin 2, G i k * A k r
 
+/-- Identity `2 × 2` real matrix. -/
+def matId2 : RMat 2 2 :=
+  fun i j => if i = j then 1 else 0
+
+/-- Transpose of a `2 × 2` real matrix. -/
+def matTranspose2 (G : RMat 2 2) : RMat 2 2 :=
+  fun i j => G j i
+
+/-- Explicit inverse of a `2 × 2` real matrix (valid whenever `det2 G ≠ 0`). -/
+noncomputable def matInv2 (G : RMat 2 2) : RMat 2 2 :=
+  fun i j => (det2 G)⁻¹ *
+    if i = 0 then (if j = 0 then G 1 1 else -(G 0 1))
+    else (if j = 0 then -(G 1 0) else G 0 0)
+
+private theorem det2_matMul2 (G H : RMat 2 2) : det2 (matMul2 G H) = det2 G * det2 H := by
+  unfold det2 matMul2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem det2_matInv2 {G : RMat 2 2} (h : det2 G ≠ 0) :
+    det2 (matInv2 G) = (det2 G)⁻¹ := by
+  unfold matInv2
+  change ((det2 G)⁻¹ * (if (0 : Fin 2) = 0 then (if (0 : Fin 2) = 0 then G 1 1 else -(G 0 1)) else (if (0 : Fin 2) = 0 then -(G 1 0) else G 0 0))) *
+    ((det2 G)⁻¹ * (if (1 : Fin 2) = 0 then (if (1 : Fin 2) = 0 then G 1 1 else -(G 0 1)) else (if (1 : Fin 2) = 0 then -(G 1 0) else G 0 0))) -
+    ((det2 G)⁻¹ * (if (0 : Fin 2) = 0 then (if (1 : Fin 2) = 0 then G 1 1 else -(G 0 1)) else (if (1 : Fin 2) = 0 then -(G 1 0) else G 0 0))) *
+    ((det2 G)⁻¹ * (if (1 : Fin 2) = 0 then (if (0 : Fin 2) = 0 then G 1 1 else -(G 0 1)) else (if (0 : Fin 2) = 0 then -(G 1 0) else G 0 0))) = (det2 G)⁻¹
+  norm_num
+  field_simp
+  unfold det2
+  ring
+
+private theorem matMul2_inv_left {G : RMat 2 2} (h : det2 G ≠ 0) :
+    matMul2 (matInv2 G) G = matId2 := by
+  funext i j
+  fin_cases i <;> fin_cases j <;>
+    (unfold matMul2 matInv2 matId2; simp only [Fin.sum_univ_two]; norm_num;
+     field_simp; unfold det2; ring)
+
+private theorem matMul2_inv_right {G : RMat 2 2} (h : det2 G ≠ 0) :
+    matMul2 G (matInv2 G) = matId2 := by
+  funext i j
+  fin_cases i <;> fin_cases j <;>
+    (unfold matMul2 matInv2 matId2; simp only [Fin.sum_univ_two]; norm_num;
+     field_simp; unfold det2; ring)
+
 /-- Squared Frobenius norm of a `2 × 2` real matrix. -/
 def matFrobSq2 (G : RMat 2 2) : ℝ :=
   ∑ i : Fin 2, ∑ j : Fin 2, (G i j) ^ 2
+
+/-- Single-mode linear actions of `2 × 2` real matrices on a `2 × 2 × 2` real tensor. -/
+def applyMode1 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
+  fun i j l => ∑ a : Fin 2, G i a * T a j l
+
+def applyMode2 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
+  fun i j l => ∑ b : Fin 2, G j b * T i b l
+
+def applyMode3 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
+  fun i j l => ∑ c : Fin 2, G l c * T i j c
 
 /-- Multilinear action of `(G₁, G₂, G₃) ∈ M₂(ℝ)³` on a `2 × 2 × 2` real tensor. -/
 def applyGL3 (G1 G2 G3 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
     Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
   fun i j l => ∑ a : Fin 2, ∑ b : Fin 2, ∑ c : Fin 2, G1 i a * G2 j b * G3 l c * T a b c
+
+private theorem applyGL3_eq_modes (G1 G2 G3 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyGL3 G1 G2 G3 T = applyMode1 G1 (applyMode2 G2 (applyMode3 G3 T)) := by
+  funext i j l
+  unfold applyGL3 applyMode1 applyMode2 applyMode3
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem applyMode1_id (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode1 matId2 T = T := by
+  funext i j l
+  fin_cases i <;> (unfold applyMode1 matId2; simp)
+
+private theorem applyMode2_id (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode2 matId2 T = T := by
+  funext i j l
+  fin_cases j <;> (unfold applyMode2 matId2; simp)
+
+private theorem applyMode3_id (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode3 matId2 T = T := by
+  funext i j l
+  fin_cases l <;> (unfold applyMode3 matId2; simp)
+
+private theorem applyMode1_comp (G H : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode1 G (applyMode1 H T) = applyMode1 (matMul2 G H) T := by
+  funext i j l
+  unfold applyMode1 matMul2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem applyMode2_comp (G H : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode2 G (applyMode2 H T) = applyMode2 (matMul2 G H) T := by
+  funext i j l
+  unfold applyMode2 matMul2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem applyMode3_comp (G H : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode3 G (applyMode3 H T) = applyMode3 (matMul2 G H) T := by
+  funext i j l
+  unfold applyMode3 matMul2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem applyMode1_mode2_comm (G1 G2 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode1 G1 (applyMode2 G2 T) = applyMode2 G2 (applyMode1 G1 T) := by
+  funext i j l; unfold applyMode1 applyMode2; simp only [Fin.sum_univ_two]; ring
+
+private theorem applyMode1_mode3_comm (G1 G3 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode1 G1 (applyMode3 G3 T) = applyMode3 G3 (applyMode1 G1 T) := by
+  funext i j l; unfold applyMode1 applyMode3; simp only [Fin.sum_univ_two]; ring
+
+private theorem applyMode2_mode3_comm (G2 G3 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    applyMode2 G2 (applyMode3 G3 T) = applyMode3 G3 (applyMode2 G2 T) := by
+  funext i j l; unfold applyMode2 applyMode3; simp only [Fin.sum_univ_two]; ring
+
+private theorem cayleyDet_applyMode1 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    cayleyDet (applyMode1 G T) = (det2 G) ^ 2 * cayleyDet T := by
+  unfold cayleyDet applyMode1 det2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem cayleyDet_applyMode2 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    cayleyDet (applyMode2 G T) = (det2 G) ^ 2 * cayleyDet T := by
+  unfold cayleyDet applyMode2 det2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem cayleyDet_applyMode3 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    cayleyDet (applyMode3 G T) = (det2 G) ^ 2 * cayleyDet T := by
+  unfold cayleyDet applyMode3 det2
+  simp only [Fin.sum_univ_two]
+  ring
+
+/-- **Relative `GL(2)³`-Invariance of Cayley's Hyperdeterminant (`[LC]`):**
+`cayleyDet (applyGL3 G₁ G₂ G₃ T) = (det2 G₁ * det2 G₂ * det2 G₃)² * cayleyDet T`. -/
+theorem cayleyDet_applyGL3 (G1 G2 G3 : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    cayleyDet (applyGL3 G1 G2 G3 T) = (det2 G1 * det2 G2 * det2 G3) ^ 2 * cayleyDet T := by
+  rw [applyGL3_eq_modes, cayleyDet_applyMode1, cayleyDet_applyMode2, cayleyDet_applyMode3]
+  ring
+
+/-- Every `GL(2)³`-image of `wTensor ℝ` lies on the hyperdeterminant wall `cayleyDet = 0`. -/
+theorem cayleyDet_applyGL3_wTensor (G1 G2 G3 : RMat 2 2) :
+    cayleyDet (applyGL3 G1 G2 G3 (wTensor ℝ)) = 0 := by
+  rw [cayleyDet_applyGL3, cayleyDet_wTensor, mul_zero]
+
+private theorem mode2PencilSq_applyMode1 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    mode2PencilSq (applyMode1 G T) = (det2 G) ^ 2 * mode2PencilSq T := by
+  unfold mode2PencilSq applyMode1 det2
+  simp only [Fin.sum_univ_two]
+  ring
+
+private theorem mode2PencilSq_applyMode3 (G : RMat 2 2) (T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    mode2PencilSq (applyMode3 G T) = (det2 G) ^ 2 * mode2PencilSq T := by
+  unfold mode2PencilSq applyMode3 det2
+  simp only [Fin.sum_univ_two]
+  ring
 
 /-- The centered border-rank curve transported by `(G₁, G₂, G₃)` onto the smooth wall point
 `T_wall = (G₁, G₂, G₃) · W`. -/
@@ -1188,11 +1722,13 @@ theorem gl3_weightDecay_upper (Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) (G1 G
 
 /-- **General `GL(2)³` Stretched-Exponential Excess Free Energy — Lower Bound on `Z^{(2)}(β)` (`[LC]`):**
 For *any* target `Tstar` and *any* wall point `T_wall = (G₁, G₂, G₃) · W` with
-`L_wall = ‖T_wall - T*‖_F²`, there exist explicit positive constants `c_vol > 0` and `a₂ > 0`
+`L_wall := ‖T_wall - T*‖_F²`, there exist explicit positive constants `c_vol > 0` and `a₂ > 0`
 such that for all `β ≥ 1`,
 `c_vol · exp(-(β L_wall + a₂ β^{1/4})) ≤ tensorPartitionZ Tstar 2 β`.
-Combined with `genericPartitionZ_two_le_stretchedExp`, this certifies
-`-log Z_{T*}^{(2)}(β) - β L_wall ≍ β^{1/4}` for all `β ≥ 1`. -/
+When `GenericWallHyp Tstar L_wall` also holds with the *same* `L_wall`,
+`genericPartitionZ_two_stretchedExp_twoSided` pairs this lower bound with
+`genericPartitionZ_two_le_stretchedExp` to certify `-log Z_{T*}^{(2)}(β) - β L_wall ≍ β^{1/4}`
+for all `β ≥ 1`. -/
 theorem gl3PartitionZ_two_ge_stretchedExp (Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2))
     (G1 G2 G3 : RMat 2 2) :
     let Twall := applyGL3 G1 G2 G3 (wTensor ℝ)
@@ -1502,6 +2038,177 @@ theorem gl3PartitionZ_two_ge_stretchedExp (Tstar : Tensor ℝ (Fin 2) (Fin 2) (F
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hβpow_ge (by positivity))
     (Real.exp_pos _).le
 
+/-! #### Two-sided general `[LC]` linking theorems and near-minimizer scaling corollaries -/
+
+/-- **Two-Sided General `R^{-6}` Escape Law (`[LC]`):**
+Whenever `Tstar` satisfies `GenericWallHyp Tstar Lwall` and a wall point
+`T_wall = (G₁, G₂, G₃) · W` attains the *same* `Lwall = ‖T_wall - T*‖_F²`,
+the excess loss obeys both the lower bound `ΔL ≥ min(δ₀, c_lo / R⁶)` for all `θ` and the matching
+upper bound `∃ θ, ‖θ‖₂² ≤ R² ∧ ΔL ≤ C_hi / R⁶` for all `R ≥ R₀`. -/
+theorem generic_escape_twoSided {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) (G1 G2 G3 : RMat 2 2)
+    (hwall : tensorFrobSq (fun i j l => applyGL3 G1 G2 G3 (wTensor ℝ) i j l - Tstar i j l) = Lwall) :
+    ∃ (c_lo C_hi R₀ : ℝ), 0 < c_lo ∧ 0 < C_hi ∧ 0 < R₀ ∧
+      (∀ θ : BilinearParam 2 2 2 2,
+        min h.δ₀ (c_lo / (paramNormSq θ) ^ 3) ≤ bilinearLoss Tstar θ - Lwall) ∧
+      (∀ {R : ℝ}, R₀ ≤ R →
+        ∃ θ : BilinearParam 2 2 2 2,
+          paramNormSq θ ≤ R ^ 2 ∧ bilinearLoss Tstar θ - Lwall ≤ C_hi / R ^ 6) := by
+  let MG : ℝ := matFrobSq2 G1 + matFrobSq2 G2 + matFrobSq2 G3 + 1
+  let CL : ℝ := Lwall + 2 * tensorFrobSq (fun i j l => G1 i 1 * G2 j 1 * G3 l 1)
+  have hMG_pos : 0 < MG := by
+    have : 0 ≤ matFrobSq2 G1 := by unfold matFrobSq2; positivity
+    have : 0 ≤ matFrobSq2 G2 := by unfold matFrobSq2; positivity
+    have : 0 ≤ matFrobSq2 G3 := by unfold matFrobSq2; positivity
+    dsimp only [MG]; linarith
+  have hCL_pos : 0 < CL := by
+    have hL : 0 < Lwall := h.Lwall_pos
+    have hv : 0 ≤ tensorFrobSq (fun i j l => G1 i 1 * G2 j 1 * G3 l 1) := tensorFrobSq_nonneg _
+    dsimp only [CL]; linarith
+  refine ⟨76 * h.α * h.m₀ ^ 3, 432 * CL * MG ^ 3, Real.sqrt (12 * MG),
+    by have := h.hα; have := h.hm₀; positivity,
+    by positivity,
+    Real.sqrt_pos.mpr (by positivity),
+    generic_escape_lower h, ?_⟩
+  intro R hR
+  have hup := gl3_escape_upper Tstar G1 G2 G3 hR
+  rw [hwall] at hup
+  exact hup
+
+/-- **Two-Sided General Weight-Decay Scaling Law (`γ^{3/4}`, `[LC]`):**
+Whenever `Tstar` satisfies `GenericWallHyp Tstar Lwall` and a wall point
+`T_wall = (G₁, G₂, G₃) · W` attains the *same* `Lwall`, the penalized excess objective satisfies
+`c_lo * γ^{3/4} ≤ inf_θ ((L(θ) - Lwall) + γ ‖θ‖₂²) ≤ C_hi * γ^{3/4}` for all `γ ∈ (0, 1]`. -/
+theorem generic_weightDecay_twoSided {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) (G1 G2 G3 : RMat 2 2)
+    (hwall : tensorFrobSq (fun i j l => applyGL3 G1 G2 G3 (wTensor ℝ) i j l - Tstar i j l) = Lwall) :
+    ∃ (c_lo C_hi : ℝ), 0 < c_lo ∧ 0 < C_hi ∧
+      ∀ {γ : ℝ}, 0 < γ → γ ≤ 1 →
+        (∀ θ : BilinearParam 2 2 2 2,
+          c_lo * γ ^ (3 / 4 : ℝ) ≤ (bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ) ∧
+        (∃ θ : BilinearParam 2 2 2 2,
+          (bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ ≤ C_hi * γ ^ (3 / 4 : ℝ)) := by
+  let MG : ℝ := matFrobSq2 G1 + matFrobSq2 G2 + matFrobSq2 G3 + 1
+  let CL : ℝ := Lwall + 2 * tensorFrobSq (fun i j l => G1 i 1 * G2 j 1 * G3 l 1)
+  have hMG_pos : 0 < MG := by
+    have : 0 ≤ matFrobSq2 G1 := by unfold matFrobSq2; positivity
+    have : 0 ≤ matFrobSq2 G2 := by unfold matFrobSq2; positivity
+    have : 0 ≤ matFrobSq2 G3 := by unfold matFrobSq2; positivity
+    dsimp only [MG]; linarith
+  have hCL_pos : 0 < CL := by
+    have hL : 0 < Lwall := h.Lwall_pos
+    have hv : 0 ≤ tensorFrobSq (fun i j l => G1 i 1 * G2 j 1 * G3 l 1) := tensorFrobSq_nonneg _
+    dsimp only [CL]; linarith
+  refine ⟨genericWDConst h, CL + 12 * MG, genericWDConst_pos h, by positivity, ?_⟩
+  intro γ hγ0 hγ1
+  refine ⟨generic_weightDecay_lower h hγ0 hγ1, ?_⟩
+  have hup := gl3_weightDecay_upper Tstar G1 G2 G3 hγ0 hγ1
+  dsimp only at hup
+  rw [hwall] at hup
+  exact hup
+
+/-- **Two-Sided General Stretched-Exponential Excess Free Energy (`β^{1/4}`, `[LC]`):**
+Whenever `Tstar` satisfies `GenericWallHyp Tstar Lwall` and a wall point
+`T_wall = (G₁, G₂, G₃) · W` attains the *same* `Lwall`, for all `β ≥ 1`,
+`c_vol · exp(-(β Lwall + a₂ β^{1/4})) ≤ Z_{T*}^{(2)}(β) ≤ (4π)⁶ · exp(-(β Lwall + a₁ β^{1/4}))`. -/
+theorem genericPartitionZ_two_stretchedExp_twoSided
+    {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) (G1 G2 G3 : RMat 2 2)
+    (hwall : tensorFrobSq (fun i j l => applyGL3 G1 G2 G3 (wTensor ℝ) i j l - Tstar i j l) = Lwall) :
+    ∃ (c_vol a₁ a₂ : ℝ), 0 < c_vol ∧ 0 < a₁ ∧ 0 < a₂ ∧
+      ∀ {β : ℝ}, 1 ≤ β →
+        ENNReal.ofReal (c_vol * Real.exp (-(β * Lwall + a₂ * β ^ (1 / 4 : ℝ)))) ≤
+          tensorPartitionZ Tstar 2 β ∧
+        tensorPartitionZ Tstar 2 β ≤
+          ENNReal.ofReal ((4 * Real.pi) ^ 6 * Real.exp (-(β * Lwall + a₁ * β ^ (1 / 4 : ℝ)))) := by
+  obtain ⟨c_vol, a₂, hc_pos, ha₂_pos, hge⟩ := gl3PartitionZ_two_ge_stretchedExp Tstar G1 G2 G3
+  rw [hwall] at hge
+  refine ⟨c_vol, genericWDConst h * (4 : ℝ) ^ (-(3 / 4 : ℝ)), a₂,
+    hc_pos, mul_pos (genericWDConst_pos h) (by positivity), ha₂_pos, ?_⟩
+  intro β hβ
+  exact ⟨hge hβ, genericPartitionZ_two_le_stretchedExp h hβ⟩
+
+/-- **Near-Minimizer Two-Sided Scaling Corollaries (`ΔL* ≍ γ^{3/4}` and `‖θ*‖₂² ≍ γ^{-1/4}`, `[LC]`):**
+Under `GenericWallHyp Tstar Lwall`, any near-minimizer `θ` achieving
+`(bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ ≤ C * γ^{3/4}` with `C * γ^{3/4} < h.δ₀`
+automatically obeys simultaneous two-sided scaling of both the excess loss and the parameter norm²:
+1. `(A / C³) * γ^{3/4} ≤ bilinearLoss Tstar θ - Lwall ≤ C * γ^{3/4}`
+2. `(A / C)^{1/3} * γ^{-1/4} ≤ paramNormSq θ ≤ C * γ^{-1/4}`
+where `A = 76 * h.α * h.m₀³ > 0`. -/
+theorem generic_nearMinimizer_scaling {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} {Lwall : ℝ}
+    (h : GenericWallHyp Tstar Lwall) {C γ : ℝ} (hC : 0 < C) (hγ0 : 0 < γ)
+    (hsmall : C * γ ^ (3 / 4 : ℝ) < h.δ₀)
+    {θ : BilinearParam 2 2 2 2}
+    (hopt : (bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ ≤ C * γ ^ (3 / 4 : ℝ)) :
+    let A := 76 * h.α * h.m₀ ^ 3
+    (A / C ^ 3) * γ ^ (3 / 4 : ℝ) ≤ bilinearLoss Tstar θ - Lwall ∧
+    bilinearLoss Tstar θ - Lwall ≤ C * γ ^ (3 / 4 : ℝ) ∧
+    (A / C) ^ (1 / 3 : ℝ) * γ ^ (-(1 / 4 : ℝ)) ≤ paramNormSq θ ∧
+    paramNormSq θ ≤ C * γ ^ (-(1 / 4 : ℝ)) := by
+  intro A
+  set ΔL := bilinearLoss Tstar θ - Lwall
+  set R2 := paramNormSq θ
+  have hA_pos : 0 < A := by have := h.hα; have := h.hm₀; dsimp only [A]; positivity
+  have hΔL_nn : 0 ≤ ΔL := by
+    have := h.wall_le (bilinearTensor θ) (cayleyDet_bilinearTensor_nonneg θ)
+    dsimp only [ΔL, bilinearLoss]; linarith
+  have hR2_nn : 0 ≤ R2 := paramNormSq_nonneg θ
+  have hΔL_hi : ΔL ≤ C * γ ^ (3 / 4 : ℝ) := by
+    have : 0 ≤ γ * R2 := mul_nonneg hγ0.le hR2_nn
+    linarith
+  have hR2_hi : R2 ≤ C * γ ^ (-(1 / 4 : ℝ)) := by
+    have hγR2 : γ * R2 ≤ C * γ ^ (3 / 4 : ℝ) := by linarith
+    have hdiv : R2 ≤ (C * γ ^ (3 / 4 : ℝ)) / γ := (le_div_iff₀ hγ0).mpr (by linarith)
+    have hpow : γ ^ (3 / 4 : ℝ) / γ = γ ^ (-(1 / 4 : ℝ)) := by
+      rw [div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hγ0]; norm_num
+    calc R2 ≤ (C * γ ^ (3 / 4 : ℝ)) / γ := hdiv
+      _ = C * (γ ^ (3 / 4 : ℝ) / γ) := by ring
+      _ = C * γ ^ (-(1 / 4 : ℝ)) := by rw [hpow]
+  have hΔL_lt : ΔL < h.δ₀ := lt_of_le_of_lt hΔL_hi hsmall
+  have hdet_nn : 0 ≤ cayleyDet (bilinearTensor θ) := cayleyDet_bilinearTensor_nonneg θ
+  obtain ⟨h1, h2, h3⟩ := h.near_wall_nondeg (bilinearTensor θ) hdet_nn hΔL_lt
+  have hlin := h.near_wall_linear (bilinearTensor θ) hdet_nn hΔL_lt
+  obtain ⟨hR2_pos, hdet_lb⟩ := local_cayleyDet_escape_lower θ h.hm₀ h1 h2 h3
+  have hΔL_lb_R : A / R2 ^ 3 ≤ ΔL := by
+    calc A / R2 ^ 3
+      = h.α * (76 * h.m₀ ^ 3 / R2 ^ 3) := by dsimp only [A]; ring
+      _ ≤ h.α * cayleyDet (bilinearTensor θ) := mul_le_mul_of_nonneg_left hdet_lb h.hα.le
+      _ ≤ ΔL := hlin
+  have hR2_cube_lb : (A / C) * γ ^ (-(3 / 4 : ℝ)) ≤ R2 ^ 3 := by
+    have h1' : A / R2 ^ 3 ≤ C * γ ^ (3 / 4 : ℝ) := le_trans hΔL_lb_R hΔL_hi
+    have h2' : A ≤ (C * γ ^ (3 / 4 : ℝ)) * R2 ^ 3 := (div_le_iff₀ (pow_pos hR2_pos 3)).mp h1'
+    have h3' : A / (C * γ ^ (3 / 4 : ℝ)) ≤ R2 ^ 3 :=
+      (div_le_iff₀ (by positivity)).mpr (by linarith)
+    have hrew : (A / C) * γ ^ (-(3 / 4 : ℝ)) = A / (C * γ ^ (3 / 4 : ℝ)) := by
+      rw [Real.rpow_neg hγ0.le]; ring
+    rwa [hrew]
+  have hR2_lo : (A / C) ^ (1 / 3 : ℝ) * γ ^ (-(1 / 4 : ℝ)) ≤ R2 := by
+    have hR2_pos' : 0 < R2 := hR2_pos
+    have hrpow := Real.rpow_le_rpow (by positivity) hR2_cube_lb (by norm_num : (0 : ℝ) ≤ 1 / 3)
+    have hlhs : ((A / C) * γ ^ (-(3 / 4 : ℝ))) ^ (1 / 3 : ℝ) =
+        (A / C) ^ (1 / 3 : ℝ) * γ ^ (-(1 / 4 : ℝ)) := by
+      rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hγ0.le]; norm_num
+    have hrhs : (R2 ^ 3) ^ (1 / 3 : ℝ) = R2 := by
+      rw [← Real.rpow_natCast R2, ← Real.rpow_mul hR2_pos'.le]; norm_num
+    rwa [hlhs, hrhs] at hrpow
+  have hΔL_lo : (A / C ^ 3) * γ ^ (3 / 4 : ℝ) ≤ ΔL := by
+    have hR2_pos' : 0 < R2 := hR2_pos
+    have hR2_cube_hi : R2 ^ 3 ≤ C ^ 3 * γ ^ (-(3 / 4 : ℝ)) := by
+      have h1' : R2 ^ 3 ≤ (C * γ ^ (-(1 / 4 : ℝ))) ^ 3 :=
+        pow_le_pow_left₀ hR2_pos'.le hR2_hi 3
+      have h2' : (C * γ ^ (-(1 / 4 : ℝ))) ^ 3 = C ^ 3 * γ ^ (-(3 / 4 : ℝ)) := by
+        rw [mul_pow, ← Real.rpow_natCast (γ ^ (-(1 / 4 : ℝ))), ← Real.rpow_mul hγ0.le]; norm_num
+      rwa [h2'] at h1'
+    have hdiv : A / (C ^ 3 * γ ^ (-(3 / 4 : ℝ))) ≤ A / R2 ^ 3 :=
+      div_le_div_of_nonneg_left hA_pos.le (pow_pos hR2_pos' 3) hR2_cube_hi
+    have hrew : (A / C ^ 3) * γ ^ (3 / 4 : ℝ) = A / (C ^ 3 * γ ^ (-(3 / 4 : ℝ))) := by
+      rw [Real.rpow_neg hγ0.le]; field_simp
+    calc (A / C ^ 3) * γ ^ (3 / 4 : ℝ)
+      = A / (C ^ 3 * γ ^ (-(3 / 4 : ℝ))) := hrew
+      _ ≤ A / R2 ^ 3 := hdiv
+      _ ≤ ΔL := hΔL_lb_R
+  exact ⟨hΔL_lo, hΔL_hi, hR2_lo, hR2_hi⟩
+
 /-! ### 4. Unconditional global certification of canonical `T₃` via Hadamard–Heron identities -/
 
 /-- The 8-coordinate integer Hadamard transform of `T ∈ ℝ^{2×2×2}` corresponding to the
@@ -1795,7 +2502,19 @@ noncomputable def t3Tensor_genericWallHyp : GenericWallHyp (t3Tensor ℝ) 1 wher
   hδ₀ := by norm_num
   hα := by norm_num
   hm₀ := by norm_num
+  hdet_neg := by rw [cayleyDet_t3Tensor]; norm_num
   wall_le := t3Tensor_loss_ge_one
+  wall_approachable := by
+    intro ε hε
+    let wSym : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) := fun i j l =>
+      if (i = 0 ∧ j = 1 ∧ l = 1) ∨ (i = 1 ∧ j = 0 ∧ l = 1) ∨ (i = 1 ∧ j = 1 ∧ l = 0) then -1 else 0
+    refine ⟨wSym, ?_, ?_⟩
+    · unfold cayleyDet wSym; norm_num
+    · have h1 : tensorFrobSq (fun i j l => wSym i j l - t3Tensor ℝ i j l) = 1 := by
+        unfold tensorFrobSq wSym t3Tensor
+        simp only [Fin.sum_univ_two]
+        norm_num
+      linarith
   near_wall_nondeg := by
     intro T hdet hsmall
     obtain ⟨_, hr0_bd, hr1_bd, hr2_bd, hr3_bd⟩ := t3_near_wall_boxes hdet hsmall
@@ -2253,5 +2972,501 @@ theorem t3PartitionZ_two_ge_stretchedExp {β : ℝ} (hβ : 1 ≤ β) :
   rw [hrearr]
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hβpow_ge (by positivity))
     (Real.exp_pos _).le
+
+/-! ### 5. `GL(2)³`-orbit classification of smooth wall points and unconditional positive-measure open ball around `T₃` -/
+
+/-- **Elementary `GL(2)³`-Orbit Classification of Smooth Wall Points (`[LC]`):**
+Every `2 × 2 × 2` real tensor `T` on the hyperdeterminant wall (`cayleyDet T = 0`) with
+non-degenerate slice pencils (`0 < mode1PencilSq T`, `0 < mode2PencilSq T`, `0 < mode3PencilSq T`)
+lies in the `GL(2, ℝ)³`-orbit of `wTensor ℝ`. -/
+theorem exists_gl3_wTensor_of_cayleyDet_zero {T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)}
+    (hdet : cayleyDet T = 0)
+    (_hq1 : 0 < mode1PencilSq T) (hq2 : 0 < mode2PencilSq T) (hq3 : 0 < mode3PencilSq T) :
+    ∃ G1 G2 G3 : RMat 2 2, applyGL3 G1 G2 G3 (wTensor ℝ) = T := by
+  -- Step A: Find invertible `H3` so slice 0 of `T1 = applyMode3 H3 T` is invertible.
+  have hstepA : ∃ H3 : RMat 2 2,
+      det2 H3 ≠ 0 ∧ det2 (fun i j => applyMode3 H3 T i j 0) ≠ 0 := by
+    set d0 := T 0 0 0 * T 1 1 0 - T 0 1 0 * T 1 0 0
+    set d1 := T 0 0 1 * T 1 1 1 - T 0 1 1 * T 1 0 1
+    set tr := T 1 1 0 * T 0 0 1 - T 0 1 0 * T 1 0 1 - T 1 0 0 * T 0 1 1 + T 0 0 0 * T 1 1 1
+    by_cases hd0 : d0 ≠ 0
+    · refine ⟨matId2, by unfold det2 matId2; norm_num, ?_⟩
+      have heq : det2 (fun i j => applyMode3 matId2 T i j 0) = d0 := by
+        unfold det2 applyMode3 matId2; simp only [Fin.sum_univ_two]; norm_num; rfl
+      rwa [heq]
+    push Not at hd0
+    by_cases hd1 : d1 ≠ 0
+    · let J : RMat 2 2 := fun l c => if l = c then 0 else 1
+      refine ⟨J, by unfold det2 J; norm_num, ?_⟩
+      have heq : det2 (fun i j => applyMode3 J T i j 0) = d1 := by
+        unfold det2 applyMode3 J; simp only [Fin.sum_univ_two]; norm_num; rfl
+      rwa [heq]
+    push Not at hd1
+    have htr : tr ≠ 0 := by
+      intro htr0
+      have hq3_eq : mode3PencilSq T = 2 * d0 ^ 2 + 2 * d1 ^ 2 + tr ^ 2 := by
+        unfold mode3PencilSq; rfl
+      rw [hq3_eq, hd0, hd1, htr0] at hq3
+      norm_num at hq3
+    let U : RMat 2 2 := fun l c => if l = 0 then 1 else if c = 1 then 1 else 0
+    refine ⟨U, by unfold det2 U; norm_num, ?_⟩
+    have heq : det2 (fun i j => applyMode3 U T i j 0) = d0 + tr + d1 := by
+      unfold det2 applyMode3 U; simp only [Fin.sum_univ_two]; norm_num; dsimp only [d0, d1, tr]; ring
+    rw [heq, hd0, hd1, zero_add, add_zero]
+    exact htr
+  obtain ⟨H3, hH3_det, hT1_slice0⟩ := hstepA
+  let T1 : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) := applyMode3 H3 T
+  have hT1_det : cayleyDet T1 = 0 := by
+    dsimp only [T1]; rw [cayleyDet_applyMode3, hdet, mul_zero]
+  have hT1_q2 : 0 < mode2PencilSq T1 := by
+    dsimp only [T1]; rw [mode2PencilSq_applyMode3]
+    exact mul_pos (sq_pos_of_ne_zero hH3_det) hq2
+  -- Step B: Multiply on the left in mode 1 by `H1 = (slice0 T1)⁻¹` so `slice0 T2 = I₂`.
+  let A : RMat 2 2 := fun i j => T1 i j 0
+  have hA_det : det2 A ≠ 0 := hT1_slice0
+  let H1 : RMat 2 2 := matInv2 A
+  have hH1_det : det2 H1 ≠ 0 := by
+    dsimp only [H1]; rw [det2_matInv2 hA_det]; exact inv_ne_zero hA_det
+  let T2 : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) := applyMode1 H1 T1
+  have hT2_s0 : ∀ i j : Fin 2, T2 i j 0 = matId2 i j := by
+    intro i j
+    have hmul := congrFun (congrFun (matMul2_inv_left hA_det) i) j
+    exact hmul
+  have hT2_det : cayleyDet T2 = 0 := by
+    dsimp only [T2]; rw [cayleyDet_applyMode1, hT1_det, mul_zero]
+  have hT2_q2 : 0 < mode2PencilSq T2 := by
+    dsimp only [T2]; rw [mode2PencilSq_applyMode1]
+    exact mul_pos (sq_pos_of_ne_zero hH1_det) hT1_q2
+  -- Step C: Subtract `λ I₂` from slice 1 via mode-3 shear `K3` so `slice1 T3` is trace-0 & det-0.
+  let lam : ℝ := (T2 0 0 1 + T2 1 1 1) / 2
+  let K3 : RMat 2 2 := fun l c => match l.1, c.1 with
+    | 0, 0 => 1
+    | 0, _ => 0
+    | _, 0 => -lam
+    | _, _ => 1
+  have hK3_det : det2 K3 ≠ 0 := by unfold det2 K3; norm_num
+  let T3 : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) := applyMode3 K3 T2
+  have hT3_000 : T3 0 0 0 = 1 := by
+    dsimp only [T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]; rw [hT2_s0 0 0]; unfold matId2; norm_num
+  have hT3_010 : T3 0 1 0 = 0 := by
+    dsimp only [T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]; rw [hT2_s0 0 1]; unfold matId2; norm_num
+  have hT3_100 : T3 1 0 0 = 0 := by
+    dsimp only [T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]; rw [hT2_s0 1 0]; unfold matId2; norm_num
+  have hT3_110 : T3 1 1 0 = 1 := by
+    dsimp only [T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]; rw [hT2_s0 1 1]; unfold matId2; norm_num
+  have hT3_det : cayleyDet T3 = 0 := by
+    dsimp only [T3]; rw [cayleyDet_applyMode3, hT2_det, mul_zero]
+  have hT3_q2 : 0 < mode2PencilSq T3 := by
+    dsimp only [T3]; rw [mode2PencilSq_applyMode3]
+    exact mul_pos (sq_pos_of_ne_zero hK3_det) hT2_q2
+  set n00 := T3 0 0 1
+  set n01 := T3 0 1 1
+  set n10 := T3 1 0 1
+  set n11 := T3 1 1 1
+  have hn_tr : n11 = -n00 := by
+    have h00 : n00 = -lam + T2 0 0 1 := by
+      dsimp only [n00, T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]
+      rw [hT2_s0 0 0]; unfold matId2; norm_num
+    have h11 : n11 = -lam + T2 1 1 1 := by
+      dsimp only [n11, T3]; unfold applyMode3 K3; simp only [Fin.sum_univ_two]
+      rw [hT2_s0 1 1]; unfold matId2; norm_num
+    dsimp only [lam] at h00 h11
+    linarith
+  have hn_det : n00 ^ 2 + n01 * n10 = 0 := by
+    have hdet_eq : cayleyDet T3 = 4 * (n00 ^ 2 + n01 * n10) := by
+      unfold cayleyDet
+      rw [hT3_000, hT3_010, hT3_100, hT3_110]
+      change (1 * n00 - 0 * n10 - 0 * n01 + 1 * n11) ^ 2 -
+        4 * (1 * 1 - 0 * 0) * (n00 * n11 - n01 * n10) = 4 * (n00 ^ 2 + n01 * n10)
+      rw [hn_tr]; ring
+    linarith
+  have hn_offdiag : n01 ≠ 0 ∨ n10 ≠ 0 := by
+    by_contra hboth
+    push Not at hboth
+    rcases hboth with ⟨h01, h10⟩
+    have hn00_sq : n00 ^ 2 = 0 := by rw [h01, h10] at hn_det; linarith
+    have hn00 : n00 = 0 := sq_eq_zero_iff.mp hn00_sq
+    have hn11 : n11 = 0 := by rw [hn_tr, hn00, neg_zero]
+    have hq2_zero : mode2PencilSq T3 = 0 := by
+      unfold mode2PencilSq
+      rw [hT3_000, hT3_010, hT3_100, hT3_110]
+      change 2 * (1 * n10 - n00 * 0) ^ 2 + 2 * (0 * n11 - n01 * 1) ^ 2 +
+        (n10 * 0 - n00 * 1 - 0 * n01 + 1 * n11) ^ 2 = 0
+      rw [hn00, h01, h10, hn11]; norm_num
+    linarith
+  -- Step D: Conjugate `N = slice1 T3` to `E₀₁ = [[0, 1], [0, 0]]`, matching `applyMode2 S (wTensor ℝ)`.
+  let S : RMat 2 2 := fun i j => if i = j then 0 else 1
+  have hstepD : ∃ P : RMat 2 2,
+      applyMode1 P (applyMode2 (matTranspose2 (matInv2 P)) (applyMode2 S (wTensor ℝ))) = T3 := by
+    rcases hn_offdiag with hn01 | hn10
+    · let P : RMat 2 2 := fun i j =>
+        if i = 0 then (if j = 0 then n01 else 0) else (if j = 0 then -n00 else 1)
+      refine ⟨P, ?_⟩
+      have hP_det : det2 P = n01 := by unfold det2 P; norm_num
+      funext i j l
+      fin_cases i <;> fin_cases j <;> fin_cases l
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_000]; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n00; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_010]
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n01; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_100]; field_simp; ring
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n10; field_simp; linear_combination -hn_det
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_110]; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n11; rw [hn_tr]; field_simp
+    · let P : RMat 2 2 := fun i j =>
+        if i = 0 then (if j = 0 then n00 else 1) else (if j = 0 then n10 else 0)
+      refine ⟨P, ?_⟩
+      have hP_det : det2 P = -n10 := by unfold det2 P; norm_num
+      funext i j l
+      fin_cases i <;> fin_cases j <;> fin_cases l
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_000]; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n00; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_010]; field_simp; ring
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n01; field_simp; linear_combination -hn_det
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_100]
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n10; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        rw [hT3_110]; field_simp
+      · unfold applyMode1 applyMode2 matTranspose2 matInv2 S wTensor
+        simp only [Fin.sum_univ_two, hP_det]; dsimp only [P]; norm_num
+        change _ = n11; rw [hn_tr]; field_simp
+  obtain ⟨P, hP_eq⟩ := hstepD
+  -- Step E: Invert `H1` in mode 1 and `M3 = K3 * H3` in mode 3 to express `T = applyGL3 G1 G2 G3 W`.
+  let M3 : RMat 2 2 := matMul2 K3 H3
+  have hM3_det : det2 M3 ≠ 0 := by
+    dsimp only [M3]; rw [det2_matMul2]; exact mul_ne_zero hK3_det hH3_det
+  have hT3_from_T : T3 = applyMode1 H1 (applyMode3 M3 T) := by
+    dsimp only [T3, T2, T1, M3]
+    rw [← applyMode1_mode3_comm, applyMode3_comp]
+  refine ⟨matMul2 (matInv2 H1) P, matMul2 (matTranspose2 (matInv2 P)) S, matInv2 M3, ?_⟩
+  rw [applyGL3_eq_modes, ← applyMode1_comp, ← applyMode2_comp]
+  rw [applyMode2_mode3_comm, applyMode2_mode3_comm, applyMode1_mode3_comm, applyMode1_mode3_comm]
+  rw [hP_eq, hT3_from_T]
+  rw [applyMode1_comp, matMul2_inv_left hH1_det, applyMode1_id,
+    applyMode3_comp, matMul2_inv_left hM3_det, applyMode3_id]
+
+/-- Triangle inequality for the Euclidean Frobenius norm `√(tensorFrobSq ·)`. -/
+private theorem tensorFrobSq_sqrt_add_le (A B : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :
+    Real.sqrt (tensorFrobSq (fun i j l => A i j l + B i j l)) ≤
+      Real.sqrt (tensorFrobSq A) + Real.sqrt (tensorFrobSq B) := by
+  rw [Real.sqrt_le_iff]
+  refine ⟨add_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _), ?_⟩
+  have hcs_prod : (∑ p : Fin 2 × Fin 2 × Fin 2, A p.1 p.2.1 p.2.2 * B p.1 p.2.1 p.2.2) ^ 2 ≤
+      (∑ p : Fin 2 × Fin 2 × Fin 2, (A p.1 p.2.1 p.2.2) ^ 2) *
+      (∑ p : Fin 2 × Fin 2 × Fin 2, (B p.1 p.2.1 p.2.2) ^ 2) :=
+    Finset.sum_mul_sq_le_sq_mul_sq Finset.univ _ _
+  have hcs : (∑ i : Fin 2, ∑ j : Fin 2, ∑ l : Fin 2, A i j l * B i j l) ^ 2 ≤
+      tensorFrobSq A * tensorFrobSq B := by
+    simpa only [tensorFrobSq, Fintype.sum_prod_type] using hcs_prod
+  have hinner : ∑ i : Fin 2, ∑ j : Fin 2, ∑ l : Fin 2, A i j l * B i j l ≤
+      Real.sqrt (tensorFrobSq A) * Real.sqrt (tensorFrobSq B) := by
+    have hsq : (∑ i : Fin 2, ∑ j : Fin 2, ∑ l : Fin 2, A i j l * B i j l) ^ 2 ≤
+        (Real.sqrt (tensorFrobSq A) * Real.sqrt (tensorFrobSq B)) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt (tensorFrobSq_nonneg A), Real.sq_sqrt (tensorFrobSq_nonneg B)]
+      exact hcs
+    nlinarith [mul_nonneg (Real.sqrt_nonneg (tensorFrobSq A)) (Real.sqrt_nonneg (tensorFrobSq B))]
+  have hexp : tensorFrobSq (fun i j l => A i j l + B i j l) =
+      tensorFrobSq A + tensorFrobSq B +
+        2 * ∑ i : Fin 2, ∑ j : Fin 2, ∑ l : Fin 2, A i j l * B i j l := by
+    unfold tensorFrobSq; simp only [Fin.sum_univ_two]; ring
+  have hrhs : (Real.sqrt (tensorFrobSq A) + Real.sqrt (tensorFrobSq B)) ^ 2 =
+      tensorFrobSq A + tensorFrobSq B +
+        2 * (Real.sqrt (tensorFrobSq A) * Real.sqrt (tensorFrobSq B)) := by
+    ring_nf
+    rw [Real.sq_sqrt (tensorFrobSq_nonneg A), Real.sq_sqrt (tensorFrobSq_nonneg B)]
+  linarith
+
+/-- Explicit Euclidean open ball of radius `1 / 512` around `t3Tensor ℝ`. -/
+def t3Ball : Set (Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :=
+  {T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) |
+    tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l) < (1 / 512 : ℝ) ^ 2}
+
+/-- `t3Ball` is an open subset of `ℝ^{2×2×2}` (`[LC]`). -/
+theorem isOpen_t3Ball : IsOpen t3Ball := by
+  unfold t3Ball tensorFrobSq
+  exact isOpen_lt (by fun_prop) continuous_const
+
+/-- **Positive Lebesgue Measure of `t3Ball` (`[LC]`):**
+The certified open ball `t3Ball` contains the `L^∞`-box of half-width `1 / 2048` around
+`t3Tensor ℝ`, hence has strictly positive 8-dimensional Lebesgue measure
+`volume t3Ball ≥ (1 / 1024)⁸ > 0`. -/
+theorem volume_t3Ball_pos : 0 < volume t3Ball := by
+  let B : Set (Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :=
+    Set.pi Set.univ fun i => Set.pi Set.univ fun j => Set.pi Set.univ fun l =>
+      Set.Icc (t3Tensor ℝ i j l - 1 / 2048) (t3Tensor ℝ i j l + 1 / 2048)
+  have hsub : B ⊆ t3Ball := by
+    intro T hT
+    have hent : ∀ i j l : Fin 2, (T i j l - t3Tensor ℝ i j l) ^ 2 ≤ (1 / 2048 : ℝ) ^ 2 := by
+      intro i j l
+      have hmem := Set.mem_Icc.mp (hT i (Set.mem_univ i) j (Set.mem_univ j) l (Set.mem_univ l))
+      nlinarith
+    change tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l) < (1 / 512 : ℝ) ^ 2
+    unfold tensorFrobSq
+    simp only [Fin.sum_univ_two]
+    linarith only [hent 0 0 0, hent 0 0 1, hent 0 1 0, hent 0 1 1,
+      hent 1 0 0, hent 1 0 1, hent 1 1 0, hent 1 1 1]
+  have hvolB : volume B = ENNReal.ofReal (1 / 1024 : ℝ) ^ 8 := by
+    change (Measure.pi fun _ : Fin 2 =>
+      (Measure.pi fun _ : Fin 2 =>
+        (Measure.pi fun _ : Fin 2 => (volume : Measure ℝ)))) B = _
+    simp only [B]
+    rw [Measure.pi_pi]
+    have hrow : ∀ i : Fin 2,
+        (Measure.pi fun _ : Fin 2 => (Measure.pi fun _ : Fin 2 => (volume : Measure ℝ)))
+          (Set.pi Set.univ fun j => Set.pi Set.univ fun l =>
+            Set.Icc (t3Tensor ℝ i j l - 1 / 2048) (t3Tensor ℝ i j l + 1 / 2048)) =
+          ENNReal.ofReal (1 / 1024 : ℝ) ^ 4 := by
+      intro i
+      rw [Measure.pi_pi]
+      have hcol : ∀ j : Fin 2,
+          (Measure.pi fun _ : Fin 2 => (volume : Measure ℝ))
+            (Set.pi Set.univ fun l =>
+              Set.Icc (t3Tensor ℝ i j l - 1 / 2048) (t3Tensor ℝ i j l + 1 / 2048)) =
+            ENNReal.ofReal (1 / 1024 : ℝ) ^ 2 := by
+        intro j
+        rw [Measure.pi_pi]
+        have hent : ∀ l : Fin 2,
+            volume (Set.Icc (t3Tensor ℝ i j l - 1 / 2048) (t3Tensor ℝ i j l + 1 / 2048)) =
+              ENNReal.ofReal (1 / 1024 : ℝ) := by
+          intro l; rw [Real.volume_Icc]; congr 1; ring
+        rw [Finset.prod_congr rfl (fun l _ => hent l), Finset.prod_const, Finset.card_univ,
+          Fintype.card_fin]
+      rw [Finset.prod_congr rfl (fun j _ => hcol j), Finset.prod_const, Finset.card_univ,
+        Fintype.card_fin, ← pow_mul]
+    rw [Finset.prod_congr rfl (fun i _ => hrow i), Finset.prod_const, Finset.card_univ,
+      Fintype.card_fin, ← pow_mul]
+  have hpos : (0 : ℝ≥0∞) < ENNReal.ofReal (1 / 1024 : ℝ) ^ 8 := by
+    rw [← ENNReal.ofReal_pow (by norm_num : (0 : ℝ) ≤ 1 / 1024)]
+    exact ENNReal.ofReal_pos.mpr (by positivity)
+  exact lt_of_lt_of_le hpos (by rw [← hvolB]; exact measure_mono hsub)
+
+/-- **Unconditional Open-Ball Certification of `GenericWallHyp` and `GL(2)³` Wall Attainment (`[LC]`):**
+For *every* target `Tstar ∈ t3Ball` (with zero additional hypotheses!), there exist `Lwall > 0`,
+a `GenericWallHyp Tstar Lwall`, and matrices `G1, G2, G3 : RMat 2 2` such that
+`T_wall = (G₁, G₂, G₃) · W` attains the exact global wall loss `‖T_wall - Tstar‖_F² = Lwall`. -/
+theorem exists_genericWallHyp_and_gl3_on_t3Ball
+    {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} (hT : Tstar ∈ t3Ball) :
+    ∃ (Lwall : ℝ) (G1 G2 G3 : RMat 2 2),
+      0 < Lwall ∧
+      Nonempty (GenericWallHyp Tstar Lwall) ∧
+      tensorFrobSq (fun i j l => applyGL3 G1 G2 G3 (wTensor ℝ) i j l - Tstar i j l) = Lwall := by
+  have hη : tensorFrobSq (fun i j l => Tstar i j l - t3Tensor ℝ i j l) < (1 / 512 : ℝ) ^ 2 := hT
+  have hη_sqrt : Real.sqrt (tensorFrobSq (fun i j l => Tstar i j l - t3Tensor ℝ i j l)) ≤ 1 / 512 := by
+    rw [Real.sqrt_le_iff]; exact ⟨by norm_num, hη.le⟩
+  have hη_sym : tensorFrobSq (fun i j l => t3Tensor ℝ i j l - Tstar i j l) =
+      tensorFrobSq (fun i j l => Tstar i j l - t3Tensor ℝ i j l) := by
+    unfold tensorFrobSq; simp only [Fin.sum_univ_two]; ring
+  -- 1. `cayleyDet Tstar < 0` because `t3Ball` sits inside the `1/8`-box around `T₃`.
+  have hdet_neg : cayleyDet Tstar < 0 := by
+    have hbox : ∀ i j l : Fin 2,
+        Tstar i j l ∈ Set.Icc (t3Tensor ℝ i j l - 1 / 8) (t3Tensor ℝ i j l + 1 / 8) := by
+      intro i j l
+      have hsq : (Tstar i j l - t3Tensor ℝ i j l) ^ 2 ≤ (1 / 512 : ℝ) ^ 2 :=
+        (sq_entry_le_tensorFrobSq (fun i' j' l' => Tstar i' j' l' - t3Tensor ℝ i' j' l') i j l).trans hη.le
+      rw [Set.mem_Icc]
+      constructor <;> nlinarith
+    have hle := cayleyDet_le_on_t3Box hbox
+    linarith
+  -- 2. Reference wall point `wSym` has `cayleyDet wSym = 0` and `‖wSym - Tstar‖_F² ≤ (513/512)²`.
+  let wSym : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) := fun i j l =>
+    if (i = 0 ∧ j = 1 ∧ l = 1) ∨ (i = 1 ∧ j = 0 ∧ l = 1) ∨ (i = 1 ∧ j = 1 ∧ l = 0) then -1 else 0
+  have hwSym_det : cayleyDet wSym = 0 := by unfold cayleyDet wSym; norm_num
+  have hwSym_t3 : tensorFrobSq (fun i j l => wSym i j l - t3Tensor ℝ i j l) = 1 := by
+    unfold tensorFrobSq wSym t3Tensor; simp only [Fin.sum_univ_two]; norm_num
+  have hwSym_dist : tensorFrobSq (fun i j l => wSym i j l - Tstar i j l) ≤ (513 / 512 : ℝ) ^ 2 := by
+    have htri := tensorFrobSq_sqrt_add_le
+      (fun i j l => wSym i j l - t3Tensor ℝ i j l)
+      (fun i j l => t3Tensor ℝ i j l - Tstar i j l)
+    have hadd : (fun i j l => (wSym i j l - t3Tensor ℝ i j l) + (t3Tensor ℝ i j l - Tstar i j l)) =
+        (fun i j l => wSym i j l - Tstar i j l) := by funext i j l; ring
+    rw [hadd, hwSym_t3, Real.sqrt_one, hη_sym] at htri
+    have hle : Real.sqrt (tensorFrobSq (fun i j l => wSym i j l - Tstar i j l)) ≤ 513 / 512 := by
+      linarith
+    have hsq : Real.sqrt (tensorFrobSq (fun i j l => wSym i j l - Tstar i j l)) ^ 2 ≤ (513 / 512 : ℝ) ^ 2 := by
+      nlinarith [Real.sqrt_nonneg (tensorFrobSq (fun i j l => wSym i j l - Tstar i j l))]
+    rwa [Real.sq_sqrt (tensorFrobSq_nonneg _)] at hsq
+  -- 3. Compactness of `S = {T | 0 ≤ cayleyDet T ∧ ‖T - Tstar‖_F² ≤ 4}` yields a global minimizer `T_wall`.
+  let f : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) → ℝ :=
+    fun T => tensorFrobSq (fun i j l => T i j l - Tstar i j l)
+  have hf_cont : Continuous f := by unfold f tensorFrobSq; fun_prop
+  let S : Set (Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) := {T | 0 ≤ cayleyDet T ∧ f T ≤ 4}
+  let K : Set (Tensor ℝ (Fin 2) (Fin 2) (Fin 2)) :=
+    Set.pi Set.univ fun i => Set.pi Set.univ fun j => Set.pi Set.univ fun l =>
+      Set.Icc (Tstar i j l - 2) (Tstar i j l + 2)
+  have hK_compact : IsCompact K :=
+    isCompact_univ_pi fun _ => isCompact_univ_pi fun _ => isCompact_univ_pi fun _ => isCompact_Icc
+  have hS_closed : IsClosed S :=
+    (isClosed_le continuous_const continuous_cayleyDet).inter
+      (isClosed_le hf_cont continuous_const)
+  have hS_sub : S ⊆ K := by
+    intro T ⟨_, hfT⟩ i _ j _ l _
+    have hsq : (T i j l - Tstar i j l) ^ 2 ≤ 4 :=
+      (sq_entry_le_tensorFrobSq (fun i' j' l' => T i' j' l' - Tstar i' j' l') i j l).trans hfT
+    rw [Set.mem_Icc]; constructor <;> nlinarith
+  have hS_compact : IsCompact S := hK_compact.of_isClosed_subset hS_closed hS_sub
+  have hwSym_mem : wSym ∈ S := ⟨by rw [hwSym_det], by nlinarith only [hwSym_dist]⟩
+  obtain ⟨Twall, hTwall_mem, hTwall_min⟩ :=
+    hS_compact.exists_isMinOn ⟨wSym, hwSym_mem⟩ hf_cont.continuousOn
+  set Lwall := f Twall
+  have hLwall_le_ref : Lwall ≤ (513 / 512 : ℝ) ^ 2 :=
+    (hTwall_min hwSym_mem).trans hwSym_dist
+  have hwall_le : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T → Lwall ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l) := by
+    intro T hdet
+    by_cases hfT : f T ≤ 4
+    · exact hTwall_min ⟨hdet, hfT⟩
+    · push Not at hfT
+      change Lwall ≤ f T
+      nlinarith only [hLwall_le_ref, hfT]
+  have hwall_approachable : ∀ ε : ℝ, 0 < ε →
+      ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+        0 ≤ cayleyDet T ∧ tensorFrobSq (fun i j l => T i j l - Tstar i j l) < Lwall + ε := by
+    intro ε hε
+    exact ⟨Twall, hTwall_mem.1, by change f Twall < Lwall + ε; linarith⟩
+  -- 4. Near-wall non-degeneracy inherited directly from `t3Tensor_genericWallHyp.near_wall_nondeg`.
+  have hnondeg : ∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+      0 ≤ cayleyDet T →
+      tensorFrobSq (fun i j l => T i j l - Tstar i j l) - Lwall < 1 / 256 →
+      (3 / 8 : ℝ) ^ 2 ≤ mode1PencilSq T ∧ (3 / 8 : ℝ) ^ 2 ≤ mode2PencilSq T ∧
+        (3 / 8 : ℝ) ^ 2 ≤ mode3PencilSq T := by
+    intro T hdet hsmall
+    have hT_Tstar : tensorFrobSq (fun i j l => T i j l - Tstar i j l) < (257 / 256 : ℝ) ^ 2 := by
+      have h1 : tensorFrobSq (fun i j l => T i j l - Tstar i j l) < (513 / 512 : ℝ) ^ 2 + 1 / 256 := by
+        linarith
+      nlinarith
+    have hT_Tstar_sqrt : Real.sqrt (tensorFrobSq (fun i j l => T i j l - Tstar i j l)) ≤ 257 / 256 := by
+      rw [Real.sqrt_le_iff]; exact ⟨by norm_num, hT_Tstar.le⟩
+    have htri := tensorFrobSq_sqrt_add_le
+      (fun i j l => T i j l - Tstar i j l)
+      (fun i j l => Tstar i j l - t3Tensor ℝ i j l)
+    have hadd : (fun i j l => (T i j l - Tstar i j l) + (Tstar i j l - t3Tensor ℝ i j l)) =
+        (fun i j l => T i j l - t3Tensor ℝ i j l) := by funext i j l; ring
+    rw [hadd] at htri
+    have hsqrt_le : Real.sqrt (tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l)) ≤ 515 / 512 := by
+      linarith
+    have hT_t3 : tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l) - 1 < 1 / 64 := by
+      have hsq : Real.sqrt (tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l)) ^ 2 ≤
+          (515 / 512 : ℝ) ^ 2 := by
+        nlinarith [Real.sqrt_nonneg (tensorFrobSq (fun i j l => T i j l - t3Tensor ℝ i j l))]
+      rw [Real.sq_sqrt (tensorFrobSq_nonneg _)] at hsq
+      nlinarith
+    exact t3Tensor_genericWallHyp.near_wall_nondeg T hdet hT_t3
+  -- 5. Assemble `GenericWallHyp Tstar Lwall` via `GenericWallHyp.of_nondeg` (automatic IVT/Lipschitz!).
+  let hhyp : GenericWallHyp Tstar Lwall :=
+    GenericWallHyp.of_nondeg hdet_neg hwall_le hwall_approachable (1 / 256) (3 / 8)
+      (by norm_num) (by norm_num) hnondeg
+  have hLwall_pos : 0 < Lwall := hhyp.Lwall_pos
+  -- 6. Show `cayleyDet Twall = 0` (contradiction along segment `Tstar → Twall` if `> 0`).
+  have hTwall_det : cayleyDet Twall = 0 := by
+    by_contra hne
+    have hpos : 0 < cayleyDet Twall := lt_of_le_of_ne hTwall_mem.1 (Ne.symm hne)
+    let g : ℝ → ℝ := fun t => cayleyDet (fun i j l => Tstar i j l + t * (Twall i j l - Tstar i j l))
+    have hg_cont : Continuous g := by unfold g cayleyDet; fun_prop
+    have hopen : IsOpen {t : ℝ | 0 < g t} := isOpen_lt continuous_const hg_cont
+    have h1_mem : (1 : ℝ) ∈ {t : ℝ | 0 < g t} := by
+      change 0 < cayleyDet (fun i j l => Tstar i j l + 1 * (Twall i j l - Tstar i j l))
+      have heq : (fun i j l => Tstar i j l + 1 * (Twall i j l - Tstar i j l)) = Twall := by
+        funext i j l; ring
+      rwa [heq]
+    obtain ⟨δ, hδ_pos, hball⟩ := Metric.isOpen_iff.mp hopen 1 h1_mem
+    let t : ℝ := max (1 / 2) (1 - δ / 2)
+    have ht_lt1 : t < 1 := max_lt (by norm_num) (by linarith)
+    have ht_pos : 0 < t := lt_of_lt_of_le (by norm_num) (le_max_left _ _)
+    have ht_dist : dist t 1 < δ := by
+      rw [Real.dist_eq, abs_lt]
+      have hge : 1 - δ / 2 ≤ t := le_max_right _ _
+      constructor <;> linarith
+    have ht_mem : 0 < g t := hball ht_dist
+    let T' : Tensor ℝ (Fin 2) (Fin 2) (Fin 2) :=
+      fun i j l => Tstar i j l + t * (Twall i j l - Tstar i j l)
+    have hT'_dist : tensorFrobSq (fun i j l => T' i j l - Tstar i j l) = t ^ 2 * Lwall := by
+      unfold T' Lwall f tensorFrobSq; simp only [Fin.sum_univ_two]; ring
+    have hlb := hwall_le T' ht_mem.le
+    rw [hT'_dist] at hlb
+    have ht2_lt1 : t ^ 2 < 1 := by nlinarith
+    nlinarith
+  -- 7. Apply `exists_gl3_wTensor_of_cayleyDet_zero` to `Twall`.
+  obtain ⟨hq1, hq2, hq3⟩ := hnondeg Twall hTwall_mem.1
+    (by change f Twall - Lwall < 1 / 256; dsimp only [Lwall]; norm_num)
+  obtain ⟨G1, G2, G3, hG_eq⟩ := exists_gl3_wTensor_of_cayleyDet_zero hTwall_det
+    (lt_of_lt_of_le (by norm_num) hq1)
+    (lt_of_lt_of_le (by norm_num) hq2)
+    (lt_of_lt_of_le (by norm_num) hq3)
+  refine ⟨Lwall, G1, G2, G3, hLwall_pos, ⟨hhyp⟩, ?_⟩
+  rw [hG_eq]
+
+/-- **Unconditional Positive-Measure Open-Ball Two-Sided Laws (`[LC]`):**
+For *every* target `Tstar ∈ t3Ball` (an explicit open set of strictly positive 8D Lebesgue measure
+around `T₃`, certified by `isOpen_t3Ball` and `volume_t3Ball_pos`), with **zero unverified
+hypotheses**, there exist a unique exact wall loss `Lwall > 0` and positive constants such that
+`Tstar` obeys ALL THREE matching two-sided laws simultaneously:
+1. Exact wall infimum: `Lwall = inf {‖T - Tstar‖_F² | 0 ≤ cayleyDet T}`.
+2. Two-sided `R^{-6}` escape law: `ΔL ≥ min(δ₀, c_lo / R⁶)` and `∃ θ, ‖θ‖₂² ≤ R² ∧ ΔL ≤ C_hi / R⁶`.
+3. Two-sided `γ^{3/4}` weight-decay law: `c_wd_lo γ^{3/4} ≤ inf_θ (ΔL + γ ‖θ‖₂²) ≤ C_wd_hi γ^{3/4}`.
+4. Two-sided `β^{1/4}` stretched-exponential excess free energy:
+   `c_vol exp(-(β Lwall + a₂ β^{1/4})) ≤ Z_{Tstar}^{(2)}(β) ≤ (4π)⁶ exp(-(β Lwall + a₁ β^{1/4}))`. -/
+theorem t3Ball_twoSided_laws {Tstar : Tensor ℝ (Fin 2) (Fin 2) (Fin 2)} (hT : Tstar ∈ t3Ball) :
+    ∃ (Lwall δ₀ c_lo C_hi R₀ c_wd_lo C_wd_hi c_vol a₁ a₂ : ℝ),
+      0 < Lwall ∧ 0 < δ₀ ∧ 0 < c_lo ∧ 0 < C_hi ∧ 0 < R₀ ∧
+      0 < c_wd_lo ∧ 0 < C_wd_hi ∧ 0 < c_vol ∧ 0 < a₁ ∧ 0 < a₂ ∧
+      (∀ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+        0 ≤ cayleyDet T → Lwall ≤ tensorFrobSq (fun i j l => T i j l - Tstar i j l)) ∧
+      (∀ ε : ℝ, 0 < ε →
+        ∃ T : Tensor ℝ (Fin 2) (Fin 2) (Fin 2),
+          0 ≤ cayleyDet T ∧ tensorFrobSq (fun i j l => T i j l - Tstar i j l) < Lwall + ε) ∧
+      (∀ θ : BilinearParam 2 2 2 2,
+        min δ₀ (c_lo / (paramNormSq θ) ^ 3) ≤ bilinearLoss Tstar θ - Lwall) ∧
+      (∀ {R : ℝ}, R₀ ≤ R →
+        ∃ θ : BilinearParam 2 2 2 2,
+          paramNormSq θ ≤ R ^ 2 ∧ bilinearLoss Tstar θ - Lwall ≤ C_hi / R ^ 6) ∧
+      (∀ {γ : ℝ}, 0 < γ → γ ≤ 1 →
+        (∀ θ : BilinearParam 2 2 2 2,
+          c_wd_lo * γ ^ (3 / 4 : ℝ) ≤ (bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ) ∧
+        (∃ θ : BilinearParam 2 2 2 2,
+          (bilinearLoss Tstar θ - Lwall) + γ * paramNormSq θ ≤ C_wd_hi * γ ^ (3 / 4 : ℝ))) ∧
+      (∀ {β : ℝ}, 1 ≤ β →
+        ENNReal.ofReal (c_vol * Real.exp (-(β * Lwall + a₂ * β ^ (1 / 4 : ℝ)))) ≤
+          tensorPartitionZ Tstar 2 β ∧
+        tensorPartitionZ Tstar 2 β ≤
+          ENNReal.ofReal ((4 * Real.pi) ^ 6 * Real.exp (-(β * Lwall + a₁ * β ^ (1 / 4 : ℝ))))) := by
+  obtain ⟨Lwall, G1, G2, G3, hL_pos, ⟨hhyp⟩, hwall⟩ := exists_genericWallHyp_and_gl3_on_t3Ball hT
+  obtain ⟨c_lo, C_hi, R₀, hc_lo, hC_hi, hR₀, hesc_lo, hesc_hi⟩ :=
+    generic_escape_twoSided hhyp G1 G2 G3 hwall
+  obtain ⟨c_wd_lo, C_wd_hi, hc_wd_lo, hC_wd_hi, hwd⟩ :=
+    generic_weightDecay_twoSided hhyp G1 G2 G3 hwall
+  obtain ⟨c_vol, a₁, a₂, hc_vol, ha₁, ha₂, hZ⟩ :=
+    genericPartitionZ_two_stretchedExp_twoSided hhyp G1 G2 G3 hwall
+  exact ⟨Lwall, hhyp.δ₀, c_lo, C_hi, R₀, c_wd_lo, C_wd_hi, c_vol, a₁, a₂,
+    hL_pos, hhyp.hδ₀, hc_lo, hC_hi, hR₀, hc_wd_lo, hC_wd_hi, hc_vol, ha₁, ha₂,
+    hhyp.wall_le, hhyp.wall_approachable, hesc_lo, hesc_hi, hwd, hZ⟩
 
 end EatYourFiber
