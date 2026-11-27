@@ -5,5 +5,6 @@ import EatYourFiber.LoRASchurLaplace
 import EatYourFiber.AoyagiWatanabeBoundary
 import EatYourFiber.AoyagiWatanabe
 import EatYourFiber.BorderRankSLT
+import EatYourFiber.GenericBorderRank
 import EatYourFiber.AttentionLoRA
 import EatYourFiber.RRRFiberStratification

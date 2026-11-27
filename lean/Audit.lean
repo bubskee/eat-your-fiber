@@ -72,6 +72,38 @@ import EatYourFiber
 #print axioms EatYourFiber.wPartitionZ_three_ge_poly
 #print axioms EatYourFiber.wPartitionZ_three_ge_poly_sharp
 
+-- Positive-Measure Generic Border-Rank Singularity (Det < 0, γ^{3/4}, β^{1/4})
+#print axioms EatYourFiber.cayleyDet_bilinearTensor
+#print axioms EatYourFiber.cayleyDet_rankAtMost_two
+#print axioms EatYourFiber.cayleyDet_bilinearTensor_nonneg
+#print axioms EatYourFiber.not_rankAtMost_two_of_cayleyDet_neg
+#print axioms EatYourFiber.three_le_tensorRank_of_cayleyDet_neg
+#print axioms EatYourFiber.bilinearLoss_pos_of_cayleyDet_neg
+#print axioms EatYourFiber.cayleyDet_wTensor
+#print axioms EatYourFiber.cayleyDet_t3Tensor
+#print axioms EatYourFiber.t3Tensor_tensorRank
+#print axioms EatYourFiber.isOpen_cayleyDet_neg
+#print axioms EatYourFiber.cayleyDet_le_on_t3Box
+#print axioms EatYourFiber.volume_cayleyDet_neg_pos
+#print axioms EatYourFiber.cayleyDet_sq_ge_of_modePencils
+#print axioms EatYourFiber.cayleyDet_ge_of_modePencils
+#print axioms EatYourFiber.local_cayleyDet_escape_lower
+#print axioms EatYourFiber.generic_escape_lower
+#print axioms EatYourFiber.generic_weightDecay_lower
+#print axioms EatYourFiber.genericPartitionZ_two_le_stretchedExp
+#print axioms EatYourFiber.gl3CenteredCurve_tensor
+#print axioms EatYourFiber.gl3_escape_upper
+#print axioms EatYourFiber.gl3_weightDecay_upper
+#print axioms EatYourFiber.gl3PartitionZ_two_ge_stretchedExp
+#print axioms EatYourFiber.t3Tensor_loss_ge_one
+#print axioms EatYourFiber.t3Tensor_genericWallHyp
+#print axioms EatYourFiber.t3Tensor_excessLoss_ge_of_paramNormSq
+#print axioms EatYourFiber.t3Tensor_escape_upper
+#print axioms EatYourFiber.t3Tensor_weightDecay_lower
+#print axioms EatYourFiber.t3Tensor_weightDecay_upper
+#print axioms EatYourFiber.t3PartitionZ_two_le_stretchedExp
+#print axioms EatYourFiber.t3PartitionZ_two_ge_stretchedExp
+
 -- Vendored OAI Tensor & BorderRank highlights (for Track 1: Bilinear MLPs)
 #print axioms OAI.LinearAlgebra.SpectralBooks.geometricBorderRank_le_tensorRank
 #print axioms OAI.LinearAlgebra.SpectralBooks.card_le_geometricBorderRank_of_minor
