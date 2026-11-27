@@ -13,7 +13,7 @@ Different parameter vectors computing the *exact same function* can sit in valle
 
 We keep claim statuses strictly separated across `lean/`, `notes/`, and `experiments/`:
 
-- **`[LC]`** — Lean-certified: builds cleanly under `-DwarningAsError=true -DautoImplicit=false` with zero `sorry`; all 60 theorems in [`lean/Audit.lean`](lean/Audit.lean) depend only on axioms in `[propext, Classical.choice, Quot.sound]`.
+- **`[LC]`** — Lean-certified: builds cleanly under `-DwarningAsError=true -DautoImplicit=false` with zero `sorry`; all 61 declarations in [`lean/Audit.lean`](lean/Audit.lean) depend only on axioms in `[propext, Classical.choice, Quot.sound]`.
 - **`[paper]`** — Proved on paper (local linearization, pullback, or branch comparison), not yet formalized in Lean.
 - **`[empirical]`** — Numerical / PyTorch MALA, SMC+HMC, L-BFGS, or SGD/Adam/AdamW observation.
 - **`[conjectural]`** — Heuristic or open conjecture.
@@ -115,7 +115,7 @@ We keep claim statuses strictly separated across `lean/`, `notes/`, and `experim
 
 - `lean/` — Lean `v4.35.0` project depending on [`slt-bridge`](https://github.com/bubskee/slt-bridge) (`SLT`) and Mathlib:
   - `lean/EatYourFiber/` — SLT fiber-geometry certificates (`LoRASchur`, `LoRASchurLaplace`, `AoyagiWatanabeBoundary`, `AoyagiWatanabe`, `RRRFiberStratification`, `AttentionLoRA`, `BorderRankSLT`).
-  - `lean/Audit.lean` — `#print axioms` verification for 60 headline declarations (57 `EatYourFiber` theorems, covering every theorem cited here except the `ring` identity `rank2_slice_identities`, plus 3 vendored `openai/math` lemmas).
+  - `lean/Audit.lean` — `#print axioms` verification for 61 headline declarations (58 `EatYourFiber` theorems, covering every theorem cited here, plus 3 vendored `openai/math` lemmas).
   - `lean/Vendor/OAI/` — 8 self-contained Apache-2.0 tensor / border-rank / block-rank modules vendored from [`openai/math`](https://github.com/openai/math). See [NOTICE](NOTICE).
 - `experiments/` — reproducible Python / PyTorch scripts (`uv`-managed) and saved JSON/PNG outputs in `experiments/results/`.
 - `notes/` — mathematical derivations, epistemic status headers, and full experiment logs.

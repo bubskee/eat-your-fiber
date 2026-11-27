@@ -62,6 +62,7 @@ import EatYourFiber
 #print axioms EatYourFiber.wTensor_geometricBorderRank
 #print axioms EatYourFiber.wTensor_tensorRank
 #print axioms EatYourFiber.wTensor_borderRank_lt_tensorRank
+#print axioms EatYourFiber.rank2_slice_identities
 #print axioms EatYourFiber.wTensor_loss_ge_of_paramNormSq
 #print axioms EatYourFiber.wTensor_escape_upper
 #print axioms EatYourFiber.wTensor_weightDecay_lower
