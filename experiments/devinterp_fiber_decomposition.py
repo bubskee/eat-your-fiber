@@ -1,6 +1,6 @@
 """
-Track A Empirical Study (Faithful 500k + Remedies):
-"Is That LLC Drop Development, or Is the Estimator Sliding Along a Symmetry Fiber?"
+Track A: the late LLC drop in Hoogland et al.'s L2H4Minf, raw vs. function-identical
+balanced checkpoints (3-seed 500k rerun, estimator comparison, controls).
 
 Applies exact full-model iso-functional canonicalization (`ORBIT`: pure invertible group
 actions preserving all 5 DTransformer output channels; `ORBIT+`: extra norm-reducing moves
@@ -2285,7 +2285,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.fill_between(hs, hm - hse, hm + hse, color="#7f8c8d", alpha=0.18)
 
     ax.errorbar(x_a, raw_m, yerr=raw_se, fmt="-o", color="#c0392b", lw=2.0, ms=3.8, capsize=2.2, label=f"Ours Raw ({n_seeds} seeds)")
-    ax.errorbar(x_a, orb_m, yerr=orb_se, fmt="-s", color="#1f618d", lw=2.0, ms=3.8, capsize=2.2, label="Ours ORBIT-Balanced")
+    ax.errorbar(x_a, orb_m, yerr=orb_se, fmt="-s", color="#1f618d", lw=2.0, ms=3.8, capsize=2.2, label="Ours, balanced (ORBIT)")
     ax.set_xscale("log")
     if t_max >= 100_000:
         ax.set_xticks([100, 1000, 10000, 46003, 126262, 363636])
@@ -2293,7 +2293,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.xaxis.set_minor_formatter(plt.NullFormatter())
     ax.set_xlabel("Training step (log scale)")
     ax.set_ylabel(r"Estimated LLC $\hat\lambda$ ($\gamma=13.3, n\beta=66.7$)")
-    ax.set_title(f"A. Faithful 500k Raw vs. ORBIT LLC ({n_seeds} seeds)")
+    ax.set_title(f"A. Raw vs. Balanced LLC Estimate ({n_seeds} seeds)")
     ax.set_ylim(-15, 190)
     ax.grid(True, alpha=0.25)
 
@@ -2321,25 +2321,24 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
     idx = np.arange(len(s_keys))
     w = 0.26
     ax.axhline(0, color="black", lw=0.8)
-    ax.bar(idx - w, [stages[k]["d_total_mean"] for k in s_keys], w, yerr=[stages[k]["d_total_se"] for k in s_keys], capsize=2.5, color="#34495e", label=r"$\Delta\hat\lambda_{\mathrm{total}}$ (Raw)")
-    ax.bar(idx,     [stages[k]["d_func_mean"]  for k in s_keys], w, yerr=[stages[k]["d_func_se"]  for k in s_keys], capsize=2.5, color="#1f618d", label=r"$\Delta\hat\lambda_{\mathrm{func}}$ (ORBIT)")
-    ax.bar(idx + w, [stages[k]["d_fiber_mean"] for k in s_keys], w, yerr=[stages[k]["d_fiber_se"] for k in s_keys], capsize=2.5, color="#e67e22", label=r"$\Delta\hat\lambda_{\mathrm{fiber}}$ (Fiber slide)")
+    ax.bar(idx - w, [stages[k]["d_total_mean"] for k in s_keys], w, yerr=[stages[k]["d_total_se"] for k in s_keys], capsize=2.5, color="#34495e", label=r"$\Delta\hat\lambda$ (Raw)")
+    ax.bar(idx,     [stages[k]["d_func_mean"]  for k in s_keys], w, yerr=[stages[k]["d_func_se"]  for k in s_keys], capsize=2.5, color="#1f618d", label=r"$\Delta\hat\lambda$ (Balanced)")
+    ax.bar(idx + w, [stages[k]["d_fiber_mean"] for k in s_keys], w, yerr=[stages[k]["d_fiber_se"] for k in s_keys], capsize=2.5, color="#e67e22", label="Raw − balanced")
     ax.set_xticks(idx)
     ax.set_xticklabels(s_labels)
     ax.set_ylabel(r"Stagewise $\Delta\hat\lambda$ (mean ± SE)")
-    ax.set_title(r"B. Stagewise $\Delta\hat\lambda_{\mathrm{total}} = \Delta\hat\lambda_{\mathrm{func}} + \Delta\hat\lambda_{\mathrm{fiber}}$")
+    ax.set_title("B. Stagewise Change, Raw vs. Balanced")
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend(loc="upper right", frameon=True)
     if "LR34_peak_to_trough" in stages and t_max >= 100_000:
         sh = stages["LR34_peak_to_trough"]["fiber_share_pct_mean"]
         sh_se = stages["LR34_peak_to_trough"]["fiber_share_pct_se"]
         ax.annotate(
-            f"LR3–LR4 fiber share:\n{sh:.1f}% ± {sh_se:.1f}%",
+            "LR3–LR4: drop absent\nat balanced points",
             xy=(2 + w, stages["LR34_peak_to_trough"]["d_fiber_mean"] * 0.5),
             xytext=(2.1, 42),
             ha="center",
             fontsize=8.0,
-            fontweight="bold",
             color="#a04000",
             bbox=dict(boxstyle="round,pad=0.25", facecolor="#fef5e7", edgecolor="#e67e22", lw=0.9),
             arrowprops=dict(arrowstyle="->", color="#a04000", lw=1.1),
@@ -2404,7 +2403,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.xaxis.set_minor_formatter(plt.NullFormatter())
     ax.set_xlabel("Training step (log scale)")
     ax.set_ylabel(r"Mean $|\gamma|$ / collapsed fraction")
-    ax.set_title(r"D. LN$_0$↔QKV Sliding vs. LN$_f$ Collapse")
+    ax.set_title(r"D. LN$_0$↔QKV Rescaling vs. LN$_f$ Collapse")
     ax.grid(True, alpha=0.25)
     ax2 = ax.twinx()
     ax2.errorbar(x_a, qkv0_m, yerr=qkv0_se, fmt="--s", color="#2980b9", lw=1.9, ms=3.8, label=r"$\|W_{\mathrm{QKV},0}\|_F$")
@@ -2455,7 +2454,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.axhline(tau, color="black", ls=":", lw=1.3, label=fr"$\gamma/(n\beta)={tau:.3f}$")
         ax.set_xlabel("Eigenvalue rank $k$ (top 512 of 4,096)")
         ax.set_ylabel(r"Exact Gauss–Newton eigenvalue $\mu_k$")
-        ax.set_title("F. Exact Gauss–Newton Spectrum at Trough")
+        ax.set_title(f"F. Gauss–Newton Spectrum at Trough ({gn_seeds[0].replace('_', ' ')})")
         ax.set_ylim(1e-4, max(float(ev_fo[0]), float(ev_fr[0])) * 2.5)
         ax.grid(True, alpha=0.25)
         ax.legend(loc="upper right", frameon=True, framealpha=0.92)
@@ -2467,8 +2466,8 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
     est_labels = {
         "vanilla": "Vanilla\nSGLD",
         "rmsprop_psgld": "RMSProp\npSGLD",
-        "param_rms_covariant": "Param-RMS\nCovariant",
-        "orbit_covariant": "Orbit-Cov.\nSGLD",
+        "param_rms_covariant": "Per-tensor\nRMS metric",
+        "orbit_covariant": "Orbit-metric\nSGLD",
     }
     if est_order:
         x_e = np.arange(len(est_order))
@@ -2483,7 +2482,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.set_xticks(x_e)
         ax.set_xticklabels([est_labels[e] for e in est_order])
         ax.set_ylabel(r"$\Delta\hat\lambda$ (Trough $-$ Peak)")
-        ax.set_title("G. Reparametrization-Aware Remedies")
+        ax.set_title("G. Peak→Trough Change by Estimator")
         ax.grid(True, axis="y", alpha=0.25)
         ax.legend(loc="lower right", frameon=True, framealpha=0.92)
 
@@ -2515,12 +2514,12 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
         ax.set_xlim(2.6, 50.0)
         ax.set_xlabel(r"Localization $\gamma$")
         ax.set_ylabel(r"Estimated LLC $\hat\lambda$")
-        ax.set_title(r"H. Finite-$\gamma$ Sweep & Full-Batch-Grad Control")
+        ax.set_title(r"H. Localization $\gamma$ and Full-Batch Control (seed 0)")
         ax.grid(True, alpha=0.25)
         ax.legend(loc="lower left", fontsize=6.9, frameon=True, framealpha=0.92)
 
     fig.suptitle(
-        "Is That LLC Drop Development or Fiber Sliding? Faithful Decomposition, Gauss–Newton Spectra & Remedies",
+        "Late LLC Drop in L2H4Minf: Raw vs. Function-Identical Balanced Checkpoints",
         fontsize=12.5,
         fontweight="bold",
         y=0.965,
@@ -2536,7 +2535,7 @@ def plot_results(data: dict[str, Any], png_path: Path = DEFAULT_PNG_PATH) -> Non
 # =============================================================================
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Track A: Faithful 500k DevInterp Fiber Decomposition + Remedies")
+    p = argparse.ArgumentParser(description="Track A: L2H4Minf LLC drop, raw vs. balanced checkpoints")
     p.add_argument("--smoke", action="store_true", help="Fast end-to-end verification of all components")
     p.add_argument("--train-only", action="store_true", help="Train models and save .safetensors checkpoints + manifest")
     p.add_argument("--from-checkpoints", "--eval-only", dest="eval_only", action="store_true", help="Evaluate saved checkpoints")
