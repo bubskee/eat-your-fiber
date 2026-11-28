@@ -1,32 +1,73 @@
-# Track A: The Late LLC Drop in Hoogland et al.'s Regression Transformer Follows a LayerNorm Rescaling Orbit
+# Track A: The Late LLC Drop in `L2H4Minf` and the LayerNorm Rescaling Orbit
 
-> **Epistemic status**
-> - `[LC]`: bilinear fiber stratification and single-head $GL(q)$ gauge invariance ([`RRRFiberStratification.lean`](../lean/EatYourFiber/RRRFiberStratification.lean), [`AttentionLoRA.lean`](../lean/EatYourFiber/AttentionLoRA.lean)). These cover reduced-rank regression and linearized attention only. Nothing about the full Transformer in this note is formalized.
-> - `[paper]` (derived by hand, not in Lean): that each move in `ORBIT` (§2) is an exact loss-preserving diffeomorphism of the 51,717-dimensional parameter space; the curvature-suppression mechanism (§6); and the change of variables showing that `orbit_covariant` SGLD is vanilla SGLD at the diagonally balanced point (§7).
-> - `[empirical]`: everything else. That covers the upstream parity check, the 3-seed 500k reruns, the SGLD estimates, the per-channel ablation, the Gauss–Newton spectra, the estimator comparison and the controls. Code: [`devinterp_fiber_decomposition.py`](../experiments/devinterp_fiber_decomposition.py), [`verify_upstream_icl_parity.py`](../experiments/verify_upstream_icl_parity.py). Data: [`devinterp_fiber_decomposition.json`](../experiments/results/devinterp_fiber_decomposition.json). Figure: [`devinterp_fiber_decomposition.png`](../experiments/results/devinterp_fiber_decomposition.png). Checkpoints: [`devinterp_checkpoints/manifest.json`](../experiments/results/devinterp_checkpoints/manifest.json).
-> - `[conjectural]`: whether anything similar happens in their language models (`LM1`–`LM5`) or in other DevInterp LLC curves.
+*Early preprint material. Written largely by AI agents; numbers are from the committed JSON.*
 
-## The Short Version
+## Status of each claim
 
-The true LLC is invariant under loss-preserving diffeomorphisms of parameter space (Lau et al., arXiv:2308.12108). The SGLD estimator is not. Its localization term $\frac{\gamma}{2}\|w - w^*\|_2^2$ pulls equally hard along every coordinate. So moving $w^*$ along a symmetry orbit changes the estimate, even though the function and the true LLC stay the same.
+- `[LC]` (Lean): bilinear fiber stratification and single-head $GL(q)$ gauge invariance ([`RRRFiberStratification.lean`](../lean/EatYourFiber/RRRFiberStratification.lean), [`AttentionLoRA.lean`](../lean/EatYourFiber/AttentionLoRA.lean)).
+  - Covers reduced-rank regression and linearized attention only.
+  - Nothing about the full Transformer here is formalized.
+- `[paper]` (by hand, not in Lean):
+  - Each `ORBIT` move (§2) is an exact loss-preserving diffeomorphism of the 51,717-dim parameter space.
+  - The curvature-suppression mechanism (§6).
+  - `orbit_covariant` SGLD equals vanilla SGLD at the diagonally balanced point (§7).
+- `[empirical]`: everything else.
+  - Code: [`devinterp_fiber_decomposition.py`](../experiments/devinterp_fiber_decomposition.py), [`verify_upstream_icl_parity.py`](../experiments/verify_upstream_icl_parity.py).
+  - Data: [`devinterp_fiber_decomposition.json`](../experiments/results/devinterp_fiber_decomposition.json). Figure: [`devinterp_fiber_decomposition.png`](../experiments/results/devinterp_fiber_decomposition.png). Checkpoints: [`manifest.json`](../experiments/results/devinterp_checkpoints/manifest.json).
+- `[conjectural]`: whether any of this applies to their language models (`LM1`–`LM5`) or other DevInterp curves.
 
-In our reruns of Hoogland et al.'s `L2H4Minf` (arXiv:2402.02364), Adam (`wd = 0`) moves a long way along one such orbit between steps `46k` and `364k`. The pre-attention LayerNorm $\gamma$ in block 0 shrinks about $6\times$ while $\|W_{\text{QKV}}\|$ grows about $6.6\times$, so the product of the two does not shrink. Hoogland et al. see this LayerNorm collapse too, "particularly the layer normalization module before the first attention block" (§7.3). They conjecture that it explains part of the LR3–LR4 LLC decrease through added degeneracy, and note that the argument "hinges on the collapse being complete" (App. D.2.6). In our runs the block-0 collapse is only partial: for most coordinates the downstream weights grow to compensate. That makes it a loss-preserving reparametrization, which leaves the true LLC unchanged, and the drop in the estimate follows it. Block 1's pre-attention LayerNorm does the same ($\gamma$ shrinks about $3\times$, $\|W_{\text{QKV}}\|$ grows about $9\times$).
+## Summary
 
-The scales show why the estimator reacts. At $\gamma = 13.3$ the chains end up about `62.3` from $w^*$, essentially what the localization term alone gives ($\sqrt{51{,}717/13.3} = 62.4$), or about `0.27` per coordinate. At the trough, block 0's $\gamma$ entries average `0.17`, so the raw chain moves across $\gamma \approx 0$ in many coordinates.
+### Background
 
-**What we find** (3 seeds unless stated):
+- The true LLC is unchanged by loss-preserving diffeomorphisms of parameter space (Lau et al., arXiv:2308.12108).
+- The SGLD estimate is not: its localization term $\frac{\gamma}{2}\|w - w^*\|_2^2$ pulls equally along every coordinate.
+- So moving $w^*$ along a symmetry orbit can change the estimate while the function and the true LLC stay fixed.
+- Hoogland et al. (arXiv:2402.02364):
+  - They link the LR3–LR4 decrease partly to LayerNorm collapse, "particularly the layer normalization module before the first attention block" (§7.3).
+  - Their degeneracy argument "hinges on the collapse being complete" (App. D.2.6).
 
-1. **The drop disappears at a function-identical point.** Between the peak (`46,003`) and trough (`363,636`), the raw SGLD estimate falls from `167.0` to `92.2`. We then map each checkpoint to a balanced point on its symmetry orbit (`ORBIT`, §2). The map is exact, and the readout changes by at most `2.1e-5` after casting to float32. At the balanced points the estimate goes from `163.6` to `164.2`. Balancing only the two pre-attention `LN_0 ↔ W_QKV` pairs (blocks 0 and 1) recovers about 96% of the trough gap (seed 0).
-2. **The gap is a finite-$\gamma$ effect, and it shrinks as $\gamma$ weakens** (seed 0, trough). With $\gamma = 40, 13.3, 3.3$ the raw estimate is `52.6`, `90.0`, `162.5`, while the balanced estimate stays between `165.2` and `167.4`. This is the main reason to think the balanced estimate is the closer one to the true LLC. It is not a strong argument. At $\gamma = 3.3$ the chains wander $\|w - w^*\| \approx 125$, so they are no longer very local. A weakly localized raw chain can also slide along the flat orbit toward the balanced region, which makes the convergence partly expected. The Gauss–Newton rank check in §6 would not depend on the gauge.
-3. **RMSProp-preconditioned SGLD cannot fix this, by construction.** Preconditioning changes how the chain moves but, up to the usual bias of adaptive preconditioning without a correction term, not the distribution it samples, and that distribution still has the isotropic localization term. Empirically, the raw estimate still drops `65` points under RMSProp-pSGLD (Hitchcock & Hoogland, arXiv:2507.21449).
-4. **Changing the localization metric does fix it.** We build a diagonal metric from the balancing scales and run SGLD at the raw weights. The estimate is then flat (`−0.27 ± 0.83`). By a change of variables this is the same computation as vanilla SGLD at the diagonally balanced point (§7). So it is not independent evidence; it is a way to get the balanced estimate without editing the checkpoint.
-5. **The early stages are unaffected.** Balancing changes the LR1 and LR2 rises by 3% or less.
+### What happens in our runs (Adam, `wd = 0`, steps `46k → 364k`)
 
-**What we do not claim:**
+- Block 0 pre-attention LN: $\gamma$ shrinks about $6\times$, $\|W_{\text{QKV}}\|$ grows about $6.6\times$.
+- Block 1 pre-attention LN: $\gamma$ shrinks about $3\times$, $\|W_{\text{QKV}}\|$ grows about $9\times$.
+- The collapse is partial: about 44% of block 0's coordinates are effectively pruned; for the rest $W_{\text{QKV}}$ compensates.
+- A compensated collapse is a loss-preserving reparametrization, so the true LLC is unchanged by it.
+- **Why the estimator reacts:**
+  - At $\gamma = 13.3$ the chains sit `62.3` from $w^*$, essentially the localization term alone ($\sqrt{51{,}717/13.3} = 62.4$), about `0.27` per coordinate.
+  - At the trough, block 0's $\gamma$ entries average `0.17`, so the raw chain crosses $\gamma \approx 0$ in many coordinates.
 
-- **That the true LLC is flat from `46k` to `364k`.** Both estimates are finite-$\gamma$, and how much the estimate moves at fixed function depends on the metric. Vanilla SGLD at the balanced point gives `+0.6`. A black-box per-tensor RMS metric gives about `−16` on both raw and balanced weights. The robust results are that the raw-versus-balanced gap closes, and that most of the raw drop goes with it.
-- **That this explains Hoogland et al.'s own curve.** Our raw drop is `75` points and theirs is `49`, and the curves separate after about `150k`, inside the window in question. If their runs drift less along the orbit, more of their drop could be real. Comparing weight norms at the trough (ours: `241.7`) would be a first check; running the balancing on their original checkpoints, if they still have them, would settle it.
-- **That nothing real happens in LR3–LR4.** As they report, the final LayerNorm readout genuinely collapses: `95%` of effective unembedding weights fall below `0.05`. About `44%` of block 0's pre-attention coordinates are also effectively pruned, and robustness to out-of-distribution inputs changes. The raw estimate's drop just does not track these changes. Balancing `lnf` moves the trough estimate by `0.02`.
+### Results (3 seeds unless stated)
+
+- **Balanced points remove the drop.**
+  - Each checkpoint is mapped to a balanced point on its symmetry orbit (`ORBIT`, §2). The map is exact; readout changes by ≤ `2.1e-5` in float32.
+  - Raw estimate: `167.0 → 92.2`. Balanced estimate: `163.6 → 164.2`.
+  - Balancing only the two pre-attention `LN_0 ↔ W_QKV` pairs closes about 96% of the trough gap (seed 0).
+- **The gap shrinks as $\gamma$ weakens** (trough, seed 0).
+  - Raw: `52.6`, `90.0`, `162.5` at $\gamma = 40, 13.3, 3.3$. Balanced: `165.2`–`167.4`.
+  - This is the main argument that the balanced value is closer to the true LLC. It is weak:
+    - At $\gamma = 3.3$ the chains wander about `125` and are not local, and the raw estimate still drops `12.5`.
+    - A weak pull lets the raw chain slide along the flat orbit toward the balanced region anyway.
+    - A gauge-free check (Gauss–Newton rank, §6) has not been run.
+- **RMSProp-pSGLD (arXiv:2507.21449) leaves most of the drop** (`−65`).
+  - Expected: preconditioning changes mixing, not the target distribution (up to the usual bias without a correction term).
+- **A metric in the localization term removes it** (`−0.27 ± 0.83` at the raw weights).
+  - This is the balanced estimate by a change of variables (§7), not independent evidence.
+- **Early stages are unaffected:** balancing changes the LR1 and LR2 rises by 3% or less.
+
+### Not claimed
+
+- **That the true LLC is flat over `46k → 364k`.**
+  - Both estimates are finite-$\gamma$.
+  - The change at fixed function depends on the metric: `+0.6` (balanced, isotropic) to about `−16` (per-tensor RMS metric).
+  - Robust: the raw-vs-balanced gap closes, and most of the raw drop goes with it.
+- **That this explains Hoogland et al.'s curve.**
+  - Our drop is `75` points, theirs `49`. The curves separate after about `150k`, inside the window in question.
+  - If their runs drift less, more of their drop could be real.
+  - First check: compare weight norms at the trough (ours `241.7`). Decisive check: balance their checkpoints, if available.
+- **That nothing real happens in LR3–LR4.**
+  - The final LN readout does collapse (`95%` of effective unembedding weights < `0.05`); balancing `lnf` moves the trough estimate by only `0.02`.
+  - Block 0 is partly pruned, and OOD robustness changes. The raw estimate's drop just doesn't track these changes.
 
 ### Main numbers
 
@@ -38,27 +79,47 @@ The scales show why the estimator reacts. At $\gamma = 13.3$ the chains end up a
 | Per-tensor RMS metric (`param_rms_covariant`, §7) | $\Delta = -17.67 \pm 0.82$ | $\Delta = -15.49 \pm 0.75$ | `−0.00 ± 0.13` |
 | Matched-init AdamW (`wd = 0.08`), §4 — *different functions* | $\Delta = -4.94 \pm 0.59$ | $\Delta = -4.09 \pm 0.87$ | `−1.18` |
 
-The vanilla row comes from the main trajectory sweep (§3). The §7 estimator benchmark reran vanilla with its own chains and got $\Delta = -75.24 \pm 3.34$.
+- The vanilla row is from the main sweep (§3). The §7 benchmark reran vanilla with its own chains: $\Delta = -75.24 \pm 3.34$.
 
-### Terms used in this note
+### Terms
 
-- **`ORBIT`** composes only invertible, loss-preserving maps that keep all 5 output channels. These are: positive coordinatewise LayerNorm ↔ next-linear rescalings, per-head $GL(16)$ balancing of $Q$–$K$ and $V$–$O$, positive ReLU neuron rescalings and permutations, and exact flat translations (the pre-LN $\mathbf{1}_d$ direction and bias absorption). For such a map $g$, $K \circ g = K$, so $\lambda(w) = \lambda(g \cdot w)$.
-- **`ORBIT+`** adds moves that are not diffeomorphisms: zeroing the 4 unused unembedding rows and rebalancing `lnf` against row 0 only. It is reported separately and changes the trough estimate by `0.01`.
-- **"Balanced estimate"** means the SGLD estimate at the `ORBIT` representative. It is itself a finite-$\gamma$, gauge-dependent number. At the seed-0 trough, three different exact gauges give `161.65` (`LN0_attn` only), `164.10` (unit $\gamma$) and `164.87` (`ORBIT`).
-- **$\Delta\hat\lambda_{\text{func}}$ and $\Delta\hat\lambda_{\text{fiber}}$** in the tables below are shorthand. $\Delta\hat\lambda_{\text{func}}$ is the change in the balanced estimate. $\Delta\hat\lambda_{\text{fiber}} = \Delta\hat\lambda_{\text{total}} - \Delta\hat\lambda_{\text{func}}$ is the part of the raw change that balancing removes. The split depends on the gauge and is not a decomposition of the true LLC.
-- **Prior work.** Lau et al. (App. D) note that the SGLD estimator approximates the LLC only under conditions on $\gamma$. Their rescaling experiment (App. O, a two-layer ReLU network) used a preconditioner matched to the rescaling. We have not found prior work showing a Transformer training run that drifts along an exact `LN ↔ Linear` orbit far enough to produce a reported LLC drop.
+- **`ORBIT`:** composes only invertible, loss-preserving maps that keep all 5 output channels.
+  - LayerNorm ↔ next-linear positive rescalings.
+  - Per-head $GL(16)$ balancing of $Q$–$K$ and $V$–$O$.
+  - ReLU neuron rescalings and permutations.
+  - Exact flat translations (pre-LN $\mathbf{1}_d$ direction, bias absorption).
+  - For such a map $g$, $K \circ g = K$, so $\lambda(w) = \lambda(g \cdot w)$.
+- **`ORBIT+`:** adds non-diffeomorphism moves (zeroing the 4 unused unembedding rows, rebalancing `lnf` on row 0). It moves the trough estimate by `0.01`.
+- **Balanced estimate:** SGLD at the `ORBIT` point. Also finite-$\gamma$ and gauge-dependent.
+  - Seed-0 trough under three exact gauges: `161.65` (`LN0_attn` only), `164.10` (unit $\gamma$), `164.87` (`ORBIT`).
+- **$\Delta\hat\lambda_{\text{func}}$ / $\Delta\hat\lambda_{\text{fiber}}$:** shorthand in the tables.
+  - func = change in the balanced estimate; fiber = raw change − func.
+  - The split depends on the gauge. It is not a decomposition of the true LLC.
+- **Prior work:**
+  - Lau et al. (App. D): the estimator approximates the LLC only under conditions on $\gamma$.
+  - Lau et al. (App. O): a rescaling experiment on a two-layer ReLU net, with a preconditioner matched to the rescaling.
+  - We have not found a prior report of a Transformer training run drifting along an exact `LN ↔ Linear` orbit far enough to produce a reported LLC drop.
 
 ---
 
 ## 1. Upstream Parity, Recipe and Comparison with the Released Curve (`[empirical]`)
 
 ### 1.1 Upstream Parity and Recipe
-- **Upstream parity check ([`experiments/verify_upstream_icl_parity.py`](../experiments/verify_upstream_icl_parity.py)):** Directly imports `InContextRegressionTransformer` from `github.com/timaeus-research/icl` (pinned commit `5baf73025d279abd2d56c98e13bf5663608709c0`), copies exact weights into our replica, and evaluates 512 fresh sequences (`seed = 2026`). Result (embedded in JSON): **`51,717` parameters, identical `state_dict` keys, `max_delta_y_f64 = 0.0`, `max_delta_y_f32 = 0.0`, `max_delta_all_5ch_f64 = 0.0`, `max_delta_all_5ch_f32 = 0.0`**.
-- **Recipe: the public YAML and the paper disagree.** The public `sweeps/regression/training-runs/L2H4Minf.yaml` sets `max_examples: 16` and leaves optimizer and scheduler unspecified (so `src/icl/regression/config.py` defaults to `SGD`, `weight_decay = 1e-4`). By contrast, the published paper (arXiv:2402.02364 Table 4 & App. F.2) specifies $K = 8$ (`max_tokens = 16`, `51,717` params), `Adam (wd = 0.0)`, `OneCycleLR(max_lr = 0.003, pct_start = 0.5, anneal_strategy = 'linear', div_factor = T/2 - 1, final_div_factor = T/2 - 1)`, $T = 500{,}000$, $B = 256$, $D = 4$, $\sigma^2 = 0.125$. We follow the paper because `analysis/L2H4Minf/llcs.pt` logs exactly 8 token positions (`0..7`, matching $K = 8$) and its MSE/LLC trajectory matches `Adam (wd = 0.0)`.
-- **SGLD settings (Hoogland et al. Table 2):** $\epsilon = 3\times 10^{-4}$, $\gamma = 13.3$, $n\beta = 66.7$, **10 chains $\times$ 5,000 steps** (`1,000` burn-in + `4,000` draws), minibatch **$m = 1{,}024$**, fixed deterministic pool of **$2^{20} = 1{,}048{,}576$** sequences (`pool_seed = 12345`), exact FP32 (`tf32=False`) on an NVIDIA RTX PRO 6000 Blackwell GPU.
+- **Upstream parity check** ([`verify_upstream_icl_parity.py`](../experiments/verify_upstream_icl_parity.py)):
+  - Imports `InContextRegressionTransformer` from `timaeus-research/icl` @ `5baf73025d279abd2d56c98e13bf5663608709c0` and copies weights into our replica.
+  - 512 fresh sequences (`seed = 2026`): `51,717` parameters, identical `state_dict` keys, max output difference `0.0` (float64 and float32, all 5 channels).
+- **Recipe** (the public YAML and the paper disagree):
+  - `sweeps/regression/training-runs/L2H4Minf.yaml`: `max_examples: 16`, no optimizer or scheduler (so `config.py` defaults to `SGD`, `weight_decay = 1e-4`).
+  - Paper (Table 4, App. F.2): $K = 8$ (`max_tokens = 16`, `51,717` params), Adam (`wd = 0`), `OneCycleLR(max_lr = 0.003, pct_start = 0.5, linear, div_factor = final_div_factor = T/2 − 1)`, $T = 500{,}000$, $B = 256$, $D = 4$, $\sigma^2 = 0.125$.
+  - We follow the paper: `analysis/L2H4Minf/llcs.pt` logs 8 token positions ($K = 8$), and its MSE/LLC trajectory matches Adam with `wd = 0`.
+- **SGLD settings** (Hoogland et al. Table 2):
+  - $\epsilon = 3\times 10^{-4}$, $\gamma = 13.3$, $n\beta = 66.7$.
+  - 10 chains × 5,000 steps (`1,000` burn-in + `4,000` draws), minibatch $m = 1{,}024$.
+  - Fixed pool of $2^{20}$ sequences (`pool_seed = 12345`); FP32 (`tf32=False`) on one NVIDIA RTX PRO 6000 Blackwell.
 
 ### 1.2 Comparison with Hoogland et al.'s Released 5-Seed `llcs.pt`
-We apply Hoogland et al.'s exact GP-smoothed LLC-derivative stage-boundary procedure (`icl/notebooks/main-figures.ipynb` cell 51 & App. B.1: RBF + WhiteKernel GP on $\log(t+1)$ for $t \ge 100$, differentiated w.r.t. $\log(t+1)$) directly to both our 3-seed mean raw curve (23 checkpoints aligned to `llcs.pt`) and Hoogland et al.'s released 5-seed `llcs.pt` (190 checkpoints):
+- Stage boundaries use Hoogland et al.'s GP-smoothed LLC-derivative procedure (`main-figures.ipynb` cell 51, App. B.1: RBF + WhiteKernel GP on $\log(t+1)$, $t \ge 100$).
+- Applied to our 3-seed mean raw curve (23 checkpoints aligned to `llcs.pt`) and to their released 5-seed `llcs.pt` (190 checkpoints):
 
 | Metric | Hoogland `llcs.pt` (5 seeds, 500k) | Our rerun (`Adam, wd=0`, 3 seeds) | Earlier 100k Retrain (`T=100k`, cheaper chain) |
 |---|---:|---:|---:|
@@ -73,16 +134,23 @@ We apply Hoogland et al.'s exact GP-smoothed LLC-derivative stage-boundary proce
 | `LR3–LR4` Drop (Peak → Trough) | `-49.26` (seed range `-39` to `-57`) | **`-74.88 ± 3.62`** | `-46.76 ± 4.52` |
 | `LR5` Uptick (Trough → `500k`) | `+6.71` (`121.16 → 127.87`) | **`+5.44 ± 1.45`** (`92.15 → 97.59`) | `+3.10 ± 0.62` |
 
-*Note on the match.* Through step `126,262` our curve is within `0.7–3.4` points of the released 5-seed mean, and the peak and trough land on the same logged steps. After about `150k` it falls further: our trough is `92.2` against their `121.2`, and our peak-to-trough drop is `75` points against their `49`. At the trough our raw parameter norm is `241.7`, so our runs have drifted a long way along the `LN_0 ↔ QKV` orbit, but we have not seen their checkpoints and cannot compare drift directly. They trained on TPUs (App. F.2.3) and do not state the precision; we trained in FP32 on one GPU. We do not know which difference, if any, causes the gap. The Pearson $r = 0.98$ in the table is dominated by the large LR2 rise, which any reasonable rerun reproduces, so it says little about the late-stage match.
+**Notes on the match:**
+
+- Through step `126,262`: within `0.7–3.4` points of their 5-seed mean; peak and trough on the same logged steps.
+- After about `150k`: ours falls further (trough `92.2` vs. `121.2`; drop `75` vs. `49`).
+- Our raw parameter norm at the trough is `241.7`. We can't compare drift without their norms or checkpoints.
+- Setup differences: they trained on TPUs (App. F.2.3, precision not stated); we used FP32 on one GPU. We don't know what causes the gap.
+- The Pearson $r = 0.98$ is dominated by the LR2 rise, which any reasonable rerun reproduces. It says little about the late stages.
 
 ---
 
 ## 2. The Balancing Maps: `ORBIT` and `ORBIT+` (`[paper]` + `[empirical]`)
 
-Balancing runs in `float64`. We check it on 512 fresh sequences both in `float64` and after casting the balanced weights to `float32`, which are the weights SGLD actually uses.
+- Balancing runs in float64.
+- Checked on 512 fresh sequences in float64 and after casting to float32 (the weights SGLD uses).
 
 ### 2.1 `ORBIT`: Invertible Loss-Preserving Maps Only
-Every move in `ORBIT` is a smooth bijection on $\mathbb{R}^{51,717}$ preserving **all 5 output channels** of `DTransformer` (zero rank truncation, zero zeroing branches):
+Every move is a smooth bijection on $\mathbb{R}^{51,717}$ preserving all 5 output channels (no rank truncation, no zeroing):
 1. **Pre-LN $\mathbf{1}_d$ kernel projection (`LN_mean_proj`, `[paper]`):** Exact flat translation ($\det = 1$) subtracting the mean along `d_embed` from `token_embedding.weight`, `postn_embedding.weight`, `attention.output.weight`, `fc2.weight`, and `fc2.bias`.
 2. **Invertible per-head $GL(16)$ Riccati balancing (`QK`, `VO`, `[paper]`):** Computes the unique SPD matrix $G \in GL(16)$ minimizing $\|G W_Q\|_F^2 + \|G^{-1} W_K\|_F^2$ (and $\|G W_V\|_F^2 + \|W_O G^{-1}\|_F^2$) via square-root-free SVDs (no Gram-matrix squaring), explicitly checking $\sigma_{\min} \ge 10^{-4}$ and $|\det G| > 0$ (leaving $G = I$ on any rank-deficient head — which never fires on Adam and cleanly guards decayed AdamW heads).
 3. **Strictly positive ReLU MLP neuronwise rescaling + permutation (`MLP`, `[paper]`):** Scales $(W_{1,j,:}, b_{1,j}) \mapsto s_j (W_{1,j,:}, b_{1,j})$, $W_{2,:,j} \mapsto s_j^{-1} W_{2,:,j}$ with $s_j = \sqrt{\|W_{2,:,j}\|_2 / \sqrt{\|W_{1,j,:}\|_2^2 + b_{1,j}^2}} > 0$ (skipping only if norm $\le 10^{-15}$, never zeroed), then sorts descending.
@@ -93,7 +161,9 @@ Every move in `ORBIT` is a smooth bijection on $\mathbb{R}^{51,717}$ preserving 
 - **`ORBIT`** applies `LN_mean_proj` followed by 20 alternating sweeps of (`LNf_unembed_all5`, `LN1_mlp`, `LN0_attn`, `QK`, `VO`, `MLP`).
 
 ### 2.2 `ORBIT+`: Extra Moves, Reported Separately
-Starts from `ORBIT`, zeros the 4 unused unembedding rows/biases (`unembedding.1.{weight,bias}[1:5] = 0`, which leaves the regression readout channel 0 unchanged but alters channels 1–4 and is not an invertible parameter-space map), and re-balances `lnf` against readout row 0 only.
+- Starts from `ORBIT`.
+- Zeros the 4 unused unembedding rows and biases (`unembedding.1.{weight,bias}[1:5] = 0`). Channel 0 is unchanged; channels 1–4 change, so this is not an invertible map.
+- Rebalances `lnf` against readout row 0 only.
 
 ### 2.3 Exactness Checks on All 114 Checkpoints (`[empirical]`)
 - **All 69 `Adam (wd = 0)` checkpoints (512 fresh sequences):**
@@ -107,7 +177,8 @@ Starts from `ORBIT`, zeros the 4 unused unembedding rows/biases (`unembedding.1.
 
 ## 3. Adam (`wd = 0`), 3 Seeds, 500k Steps (`[empirical]`; JSON `part1_adam_wd0`)
 
-*Error bars in §3–4:* `±` is the standard error **across the 3 training seeds (`0, 1, 2`)** of each seed's 10-chain mean ($\mathrm{SD}/\sqrt{3}$). Within-seed 10-chain SEs are `0.04–0.92` at almost all checkpoints (up to `2.78` mid-transition at `162k`). Fiber shares are means of per-seed ratios.
+- **Error bars in §3–4:** SE across the 3 training seeds of each seed's 10-chain mean ($\mathrm{SD}/\sqrt{3}$).
+- Within-seed 10-chain SEs: `0.04–0.92` at almost all checkpoints (up to `2.78` at `162k`).
 
 ### 3.1 Trajectory (3-Seed Mean ± SE, Table 2 SGLD: 10 × 5,000, $m=1{,}024$, $2^{20}$ pool)
 
@@ -137,7 +208,9 @@ Starts from `ORBIT`, zeros the 4 unused unembedding rows/biases (`unembedding.1.
 
 ### 3.2 Stagewise Changes, Raw vs. Balanced (3-Seed Mean ± SE)
 
-The share column is the per-seed ratio $\Delta\hat\lambda_{\text{fiber}} / \Delta\hat\lambda_{\text{total}}$, averaged. Values above 100% mean the balanced estimate rose slightly while the raw one fell. Read them as "essentially all", not as a precise fraction: the split depends on the gauge (see "Terms used in this note").
+- **Share column:** per-seed ratio $\Delta\hat\lambda_{\text{fiber}} / \Delta\hat\lambda_{\text{total}}$, averaged.
+- Values above 100% mean the balanced estimate rose slightly while the raw one fell.
+- Read as "essentially all", not a precise fraction; the split depends on the gauge.
 
 | Stage Transition | $\Delta\hat\lambda_{\text{total}}$ (Raw) | $\Delta\hat\lambda_{\text{func}}$ (`ORBIT`) | $\Delta\hat\lambda_{\text{fiber}}$ | Share removed by balancing | Per seed (`s0 / s1 / s2`) | Reading |
 |---|---:|---:|---:|---:|---|---|
@@ -147,13 +220,14 @@ The share column is the per-seed ratio $\Delta\hat\lambda_{\text{fiber}} / \Delt
 | **`LR3–LR4` (GP peak `30,303 → 363,636`)** | **-73.29 ± 3.52** | **+3.10 ± 1.15** | **-76.39 ± 2.40** | **104.4% ± 1.8%** | **`101.7% / 107.9% / 103.6%`** | Same, GP-smoothed peak |
 | **`LR5` (`363,636 → 500,000`)** | +5.44 ± 1.45 | +1.73 ± 0.08 | +3.71 ± 1.39 | 64.4% ± 7.6% | `64.4% / 77.5% / 51.3%` | Mixed |
 
-*Note on `step = 0` offset (`Raw - ORBIT = +7.89`):* At initialization, `lnf.weight = 1.0` while `unembedding` entries are $O(1/\sqrt{64})$, creating a constant `+7.89` gauge offset across `0..1,673` that cancels to `+0.01` over `LR1`.
+- **Step-0 offset (`raw − ORBIT = +7.89`):** at initialization `lnf.weight = 1.0` while `unembedding` entries are $O(1/\sqrt{64})$. The constant offset over `0..1,673` cancels to `+0.01` across LR1.
 
 ---
 
 ## 4. Matched-Init AdamW (`wd = 0.08`), 3 Seeds, 500k Steps (`[empirical]`; JSON `part2_adamw`)
 
-Each AdamW seed starts from the same initial weights as the matching Adam seed (identical SHA-256) and sees the same batch stream at every step.
+- Each AdamW seed starts from the same initial weights as the matching Adam seed (identical SHA-256).
+- Same batch stream at every step.
 
 | Step | ID MSE | OOD $g{=}5$ | Raw $\hat\lambda \pm \mathrm{SE}$ | `ORBIT` $\hat\lambda \pm \mathrm{SE}$ | Raw $-$ `ORBIT` | `blk0_ln0` $\|\gamma\|$ / $\|W_{\text{QKV}}\|$ | `lnf` $\|\gamma\|{<}0.1$ / eff${<}0.05$ | $\|w\|_2$ raw $\to$ orb | Worst $\max|\Delta y|_{\mathrm{f32}}$ |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -166,13 +240,21 @@ Each AdamW seed starts from the same initial weights as the matching Adam seed (
 | `363,636` | 1.9425 | **3.652** | **152.55 ± 2.78** | **153.74 ± 2.90** | **-1.18** | **0.188 / 12.2** | **0.96 / 0.96** | **24.9 → 16.1** | `8.9e-06` |
 | `500,000` | 1.8470 | 3.638 | 159.64 ± 2.56 | 160.48 ± 2.66 | -0.84 | 0.217 / 9.6 | 0.96 / 0.96 | 18.2 → 12.4 | `1.6e-05` |
 
-**Raw vs. balanced, `46,003 → 363,636`:** raw $\Delta = -4.94 \pm 0.59$, balanced $\Delta = -4.09 \pm 0.87$, difference $-0.85 \pm 0.30$; then an LR5 rebound of $+7.09 \pm 0.78$ to `159.64`. With weight decay, $\|W_{\text{QKV},0}\|$ stays bounded (`12.2` vs. `71.6` under Adam) and the trough gap shrinks from `−72.04` to `−1.18`. This happens even though `lnf` collapses slightly more under AdamW (`96%` vs. `95%`) and OOD `g = 5` error rises (`3.372 → 3.652`). AdamW learns different functions (ID MSE `1.943` vs. `1.804` at `364k`), so this is an intervention that supports the mechanism, not a same-function comparison.
+**Raw vs. balanced, `46,003 → 363,636`:**
+
+- Raw $\Delta = -4.94 \pm 0.59$; balanced $\Delta = -4.09 \pm 0.87$; difference $-0.85 \pm 0.30$.
+- LR5 rebound: $+7.09 \pm 0.78$ to `159.64`.
+- $\|W_{\text{QKV},0}\|$ stays bounded (`12.2` vs. `71.6` under Adam), and the trough gap shrinks from `−72.04` to `−1.18`.
+- This holds even though `lnf` collapses slightly more (`96%` vs. `95%`) and OOD `g = 5` error rises (`3.372 → 3.652`).
+- AdamW learns different functions (ID MSE `1.943` vs. `1.804` at `364k`). It supports the mechanism but is not a same-function comparison.
 
 ---
 
 ## 5. Per-Channel Ablation (`[empirical]`; JSON `part3_channel_ablation`)
 
-All entries use Adam seed 0 with Table 2 SGLD (`10` chains $\times$ `5,000` steps, $m = 1{,}024$, $2^{20}$ pool). Error bars are SE **across the 10 SGLD chains** ($\mathrm{SD}/\sqrt{10}$); `hd` is split-half drift $n\beta(\bar L_{\text{2nd half}} - \bar L_{\text{1st half}})$.
+- Adam seed 0, Table 2 SGLD (10 × 5,000, $m = 1{,}024$, $2^{20}$ pool).
+- Error bars: SE across the 10 chains ($\mathrm{SD}/\sqrt{10}$).
+- `hd`: split-half drift $n\beta(\bar L_{\text{2nd half}} - \bar L_{\text{1st half}})$.
 
 | Exact Symmetry Channel | Pure Diffeom.? | Peak `46,003` $\hat\lambda \pm \mathrm{SE}$ (`hd`) | Trough `363,636` $\hat\lambda \pm \mathrm{SE}$ (`hd`) | `364k` $\Delta$ vs. Raw | `364k` $\|w\|_2$ | `364k` $\max|\Delta y|_{\mathrm{f32}}$ | `364k` $\max|\Delta\text{all5}|_{\mathrm{f32}}$ |
 |---|:-:|---:|---:|---:|---:|---:|---:|
@@ -188,7 +270,9 @@ All entries use Adam seed 0 with Table 2 SGLD (`10` chains $\times$ `5,000` step
 | **`ORBIT` (joint pure group)** | **Yes** | 166.33 ± 0.23 (+0.9) | **164.87 ± 0.19** (-0.1) | **+74.86** | **220.5** | **`1.4e-05`** | **`4.1e-05`** |
 | `ORBIT+` (extra: zero unused rows) | No | 165.93 ± 0.22 (+0.8) | 164.88 ± 0.20 (-0.1) | +74.87 | 220.5 | `1.4e-05` | `1.2e+00` |
 
-Balancing only `LN0_attn` (`blk0_ln0` and `blk1_ln0` against `W_QKV`) recovers `+71.63` of the `+74.86` gap (`96%`) and brings split-half drift to `0.0`. `LN1_mlp` adds `+8.01`; every other single channel moves the trough estimate by less than one point. `ORBIT` and `ORBIT+` agree to `0.01`.
+- `LN0_attn` alone (blocks 0 and 1 against `W_QKV`): `+71.63` of the `+74.86` gap (`96%`); split-half drift drops to `0.0`.
+- `LN1_mlp` adds `+8.01`. Every other single channel moves the trough estimate by less than one point.
+- `ORBIT` and `ORBIT+` agree to `0.01`.
 
 ### 5.1 Effective Weights by Layer (Adam `wd = 0`, 3-Seed Mean, `46,003 → 363,636`)
 
@@ -204,7 +288,12 @@ Balancing only `LN0_attn` (`blk0_ln0` and `blk1_ln0` against `W_QKV`) recovers `
 
 ## 6. Gauss–Newton Spectra (`[empirical]` + `[paper]`; JSON `part6_gauss_newton`)
 
-We compute the nonzero eigenvalues of the Gauss–Newton matrix $G = \frac{2}{N_{\text{res}}} J^\top J$ of the MSE loss on 512 fresh sequences ($N_{\text{res}} = 512 \times 8 = 4{,}096$ scalar residuals), via the dual Gram matrix $\frac{2}{4096} J J^\top$ (float64 `eigvalsh`). We do this for all 3 Adam seeds at the peak (`46,003`) and trough (`363,636`), raw and balanced, for the full model and for the `W_QKV`, `LN_0`, `W_fc1` and `LN_1` blocks. The isotropic localization floor is $\tau = \gamma / (n\beta) = 13.3 / 66.7 = 0.1994$: directions with curvature below it are dominated by the localization term. The Gaussian–Laplace effective dimension is $\hat\lambda_{\mathrm{GN}}(\gamma) = \frac{1}{2}\sum_k \frac{n\beta \mu_k}{n\beta \mu_k + \gamma}$. These counts and effective dimensions depend on the gauge, as the isotropic floor does; they explain the estimator's behavior rather than measure the true LLC.
+- **What is computed:** nonzero eigenvalues of the Gauss–Newton matrix $G = \frac{2}{N_{\text{res}}} J^\top J$ of the MSE loss.
+  - 512 fresh sequences × 8 positions = 4,096 residuals; dual Gram matrix $\frac{2}{4096} J J^\top$, float64 `eigvalsh`.
+  - All 3 Adam seeds, peak and trough, raw and balanced; full model and the `W_QKV`, `LN_0`, `W_fc1`, `LN_1` blocks.
+- **Floor:** $\tau = \gamma / (n\beta) = 0.1994$. Directions with curvature below it are dominated by the localization term.
+- **Effective dimension:** $\hat\lambda_{\mathrm{GN}}(\gamma) = \frac{1}{2}\sum_k \frac{n\beta \mu_k}{n\beta \mu_k + \gamma}$.
+- **Caveat:** these counts depend on the gauge, as the floor does. They explain the estimator's behavior; they don't measure the true LLC.
 
 | Parameter Block (`# params`) | Milestone | Gauge | Exact $\hat\lambda_{\mathrm{GN}}(13.3)$ (3-seed mean ± SE) | Eigenvalues $> \tau$ ($0.1994$) | Max Eigenvalue $\mu_{\max}$ | Trace $\mathrm{tr}(G)$ |
 |---|---|---|---:|---:|---:|---:|
@@ -221,20 +310,31 @@ We compute the nonzero eigenvalues of the Gauss–Newton matrix $G = \frac{2}{N_
 | **`W_fc1` (`8,192`)** | Peak `46k` | `RAW` / `ORBIT` | `99.71` / `89.34` | `109.0` / `95.3` | `16.96` / `14.24` | `145.1` / `122.0` |
 | **`W_fc1` (`8,192`)** | **Trough `364k`** | **`RAW` / `ORBIT`** | **`7.52` / `75.98`** | **`0.7` / `78.3`** | **`0.40` / `28.51`** | **`3.6` / `161.2`** |
 
-**What the spectra show.** The mechanism (`[paper]`) is a change of coordinates. Shrinking $\gamma_{0,i}$ by a factor $c_i \approx 0.17$ and growing $W_{\text{QKV},:,i}$ by $1/c_i$ moves curvature from the 192 `W_QKV` weights fed by coordinate $i$ onto the single $\gamma_{0,i}$. In the raw trough, the `LN_0` block's largest eigenvalue rises from `3.19` to `31.85`, while the raw `W_QKV` trace at the trough is `60×` smaller than the balanced one (`33.7` vs. `2,072`). The number of `W_QKV` eigenvalues above $\tau$ falls from `547.0` (balanced) to `36.0` (raw), and for `W_fc1` from `78.3` to `0.7`. At the balanced points the full model has slightly more eigenvalues above $\tau$ at `364k` (`676.7`) than at `46k` (`615.7`). A check that does not depend on the gauge would be the numerical rank of $G$ at each checkpoint, which any loss-preserving diffeomorphism preserves. We have not run it.
+**What the spectra show:**
+
+- **Mechanism (`[paper]`):** shrinking $\gamma_{0,i}$ by $c_i \approx 0.17$ and growing $W_{\text{QKV},:,i}$ by $1/c_i$ moves curvature from 192 `W_QKV` weights onto one $\gamma_{0,i}$.
+- **`LN_0` block, raw:** largest eigenvalue `3.19 → 31.85` (peak → trough).
+- **`W_QKV` at the trough:** raw trace `33.7` vs. balanced `2,072` (`60×`); eigenvalues above $\tau$: `36.0` raw vs. `547.0` balanced.
+- **`W_fc1` at the trough:** eigenvalues above $\tau$: `0.7` raw vs. `78.3` balanced.
+- **Full model, balanced:** slightly more eigenvalues above $\tau$ at `364k` (`676.7`) than at `46k` (`615.7`).
+- **Not yet run:** the numerical rank of $G$, which no loss-preserving diffeomorphism changes, so it would be a gauge-free check.
 
 ---
 
 ## 7. Other Estimators (`[empirical]` + `[paper]`; JSON `part5_remedies`)
 
-Can a different sampler remove the drop without editing the checkpoint? We compare four SGLD-family estimators on all 3 Adam seeds at the peak (`46,003`) and trough (`363,636`), raw and balanced, with the Table 2 chain budget (`10` chains × `5,000` steps, $m = 1{,}024$, $2^{20}$ pool; `±` is SE across seeds):
+- **Question:** can a different sampler remove the drop without editing the checkpoint?
+- **Setup:** four SGLD-family estimators, all 3 Adam seeds, peak and trough, raw and balanced, Table 2 chain budget; `±` is SE across seeds.
 
 1. **`vanilla` (Hoogland et al. 2024):** $\Delta w_t = -\frac{\epsilon}{2}(n\beta g_t + \gamma(w_t - w^*)) + \sqrt{\epsilon}\eta_t$.
 2. **`rmsprop_psgld` (Hitchcock & Hoogland, arXiv:2507.21449 Alg. G.3; `devinterp` `RMSpropPreconditioner`):** EMA $v_t = 0.99 v_{t-1} + 0.01 g_t^2$, bias-corrected $\hat v_t$, $G_t = (\sqrt{\hat v_t} + a)^{-1}$ with $a = 0.01$, applied to both $n\beta g_t$ and $\gamma(w_t - w^*)$, with $\sqrt{G_t}$ on the noise. We chose $a = 0.01$ because $\sqrt{\hat v_t}$ ranges over $[7\times 10^{-4}, 3.7\times 10^{-2}]$, so the preconditioner is active. One departure from the default: we scale the base step to $\epsilon a$, so that flat directions keep step $\epsilon$. This sampler targets the same isotropic localized posterior $\pi_\gamma(w)$ as vanilla SGLD.
 3. **`param_rms_covariant` (per-tensor RMS metric, no symmetry knowledge):** per-tensor scale $c_T = \mathrm{rms}(w_{T,\text{init}}) / \max(\mathrm{rms}(w_T^*),\, 0.1\,\mathrm{rms}(w_{T,\text{init}}))$ (shared with LayerNorm biases), metric $D = \mathrm{diag}(c_T^2)$ in the localization term $\frac{\gamma}{2}(w - w^*)^\top D (w - w^*)$, and preconditioner $P = D^{-1}$.
 4. **`orbit_covariant` (metric from the balancing scales):** computes the cumulative scale $c_p(w^*) > 0$ of each coordinate under the coordinatewise rescaling symmetries (`(γ, β) ↔ W` for all 5 LayerNorms without bias absorption, plus both ReLU MLPs), sets $D(w^*) = \mathrm{diag}(c_p^2)$, and runs
    $$\Delta w_t = -\frac{\epsilon}{2}\big(n\beta\, D^{-1} g_t + \gamma(w_t - w^*)\big) + \sqrt{\epsilon}\, D^{-1/2} \eta_t.$$
-   In coordinates $\tilde w = D^{1/2} w$ this is vanilla SGLD started at the diagonally balanced point, with identical noise. Because the rescalings are exact symmetries, $L(D^{-1/2}\tilde w) = L(\tilde w)$. So `orbit_covariant` is a way to compute the balanced estimate without editing $w^*$; it is not independent evidence for it. It omits the $GL(16)$ head balancing and bias absorption in `ORBIT`, which is why its trough value sits `0.9` below the `ORBIT` value.
+   - In coordinates $\tilde w = D^{1/2} w$ this is vanilla SGLD started at the diagonally balanced point, with identical noise.
+   - The rescalings are exact symmetries, so $L(D^{-1/2}\tilde w) = L(\tilde w)$.
+   - So it computes the balanced estimate without editing $w^*$; it is not independent evidence.
+   - It omits `ORBIT`'s $GL(16)$ head balancing and bias absorption, which is why its trough value is `0.9` below `ORBIT`.
 
 | Estimator (3 seeds, `46k → 364k`) | `RAW` Peak $\to$ Trough | `RAW` $\Delta$ (`Trough - Peak`) | `ORBIT` Peak $\to$ Trough | `ORBIT` $\Delta$ (`Trough - Peak`) | Trough Gap (`RAW - ORBIT`) | Reading |
 |---|---|---:|---|---:|---:|---|
@@ -252,7 +352,8 @@ Can a different sampler remove the drop without editing the checkpoint? We compa
 
 ## 8. Controls: $\gamma$, Step Size and Full-Batch Gradients (`[empirical]`; JSON `part4_sgld_controls`)
 
-All runs use Adam seed 0 with the Table 2 chain budget (`10` chains $\times$ `5,000` steps, $m = 1{,}024$, $2^{20}$ pool; `±` is SE across 10 chains). **Full-batch-gradient SGLD (`FB1024`)** computes the exact gradient on a fixed 1,024-sample subset (removing minibatch gradient noise) while **retaining** Langevin noise $\sqrt{\epsilon}\,\eta_t$, measuring LLC relative to that subset's loss.
+- Adam seed 0, Table 2 chain budget; `±` is SE across 10 chains.
+- **Full-batch-gradient SGLD (`FB1024`):** exact gradient on a fixed 1,024-sample subset, Langevin noise kept; LLC measured against that subset's loss.
 
 | Setting | Peak `46,003` `RAW` / `ORBIT` | Trough `363,636` `RAW` (`hd`, $\|w-w^*\|$) | Trough `363,636` `ORBIT` (`hd`, $\|w-w^*\|$) | `RAW` $\Delta$ (`46k→364k`) | `ORBIT` $\Delta$ (`46k→364k`) |
 |---|---:|---:|---:|---:|---:|
